@@ -5,12 +5,22 @@ namespace Wikisource\Api;
 use Dflydev\DotAccessData\Data;
 use Mediawiki\Api\FluentRequest;
 use Mediawiki\Api\MediawikiApi;
+use Psr\Cache\CacheItemPoolInterface;
 
 class WikisourceApi
 {
+
+    /** @var CacheItemPoolInterface */
+    protected $cachePool;
+
     public function __construct()
     {
 
+    }
+
+    public function setCache(CacheItemPoolInterface $pool)
+    {
+        $this->cachePool = $pool;
     }
 
     /**
@@ -18,6 +28,9 @@ class WikisourceApi
      */
     public function fetchWikisources()
     {
+        if ($this->cachePool !== null && $this->cachePool->getItem('wikisources')->isHit()) {
+            return $this->cachePool->getItem('wikisources')->get();
+        }
         $query =
             "SELECT ?langCode ?langName WHERE { "
             // Instance of Wikisource language edition
@@ -37,6 +50,10 @@ class WikisourceApi
             $ws->setLanguageCode($langInfo['langCode']);
             $ws->setLanguageName($langInfo['langName']);
             $wikisources[] = $ws;
+        }
+        if ($this->cachePool !== null) {
+            $cacheItem = $this->cachePool->getItem('wikisources')->set($wikisources);
+            $this->cachePool->save($cacheItem);
         }
         return $wikisources;
     }
