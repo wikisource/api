@@ -1,0 +1,21 @@
+{
+    "name": "wikisource/api",
+    "description": "A PHP API to Wikisources (all languages).",
+    "type": "library",
+    "license": "GPL-3.0+",
+    "autoload": {
+        "psr-4": {
+            "Wikisource\\Api\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Wikisource\\Api\\Tests\\": "tests/"
+        }
+    },
+    "require": {
+        "dflydev/dot-access-data": "^1.0",
+        "addwiki/mediawiki-api": "^0.6",
+        "symfony/dom-crawler": "^3.1"
+    }
+}
