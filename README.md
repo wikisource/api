@@ -3,6 +3,8 @@ Wikisource API
 
 This is an API library for retrieving data from [Wikisources](https://wikisource.org/).
 
+[![Build Status](https://travis-ci.org/wikisource/api.svg?branch=master)](https://travis-ci.org/wikisource/api)
+
 ## Installation
 
 Install with [Composer](https://getcomposer.org/):
