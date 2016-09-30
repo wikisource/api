@@ -6,5 +6,6 @@
     -->
     <file>./</file>
     <exclude-pattern>./vendor/*</exclude-pattern>
+    <exclude-pattern>./examples/cache/</exclude-pattern>
     <rule ref="PSR2" />
 </ruleset>
