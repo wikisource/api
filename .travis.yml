@@ -9,5 +9,4 @@ install:
 
 script:
   - vendor/bin/phpcs -ps
-  - parallel-lint . --exclude vendor
-
+  - vendor/bin/parallel-lint . --exclude vendor
