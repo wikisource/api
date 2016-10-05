@@ -142,7 +142,6 @@ class IndexPage
         $pagelistAnchors = $pageCrawler->filterXPath("//div[contains(@class, 'index-pagelist')]//a");
         $pagelist = [];
         foreach ($pagelistAnchors as $pageLink) {
-
             // Get page URL (which is relative) and page number.
             // e.g. /w/index.php?title=Page:Gissing_-_The_Emancipated,_vol._I,_1890.djvu/52&action=edit&redlink=1
             $anchorHref = $pageLink->getAttribute('href');
