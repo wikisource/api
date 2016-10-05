@@ -111,4 +111,13 @@ class Work
     {
         return $this->year;
     }
+
+    /**
+     * Get a list of Index pages that used to construct this Work.
+     * @return IndexPage[]
+     */
+    public function getIndexPages()
+    {
+
+    }
 }

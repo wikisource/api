@@ -11,6 +11,10 @@ Install with [Composer](https://getcomposer.org/):
 
     composer require wikisource/api
 
+You might also want something that implements `psr/log`: https://packagist.org/providers/psr/log-implementation
+
+and something that implements `psr/cache`: https://packagist.org/providers/psr/cache-implementation
+
 ## Usage
 
 Find all Wikisources:

@@ -3,48 +3,102 @@
 namespace Wikisource\Api;
 
 use GuzzleHttp\Client;
-use Mediawiki\Api\MediawikiApi;
+use Mediawiki\Api\FluentRequest;
 use Symfony\Component\DomCrawler\Crawler;
 
 class IndexPage
 {
 
-    /** @var string The URL of the Index page. */
-    protected $url;
+    /** @var string[] The metadata of this page: 'pageid', 'ns', 'title', 'canonicalurl', etc. */
+    protected $pageInfo;
+
+    /** @var Wikisource The Wikisource that this IndexPage belongs to. */
+    protected $wikisource;
 
     /** @var Crawler */
     protected $pageCrawler;
 
     /**
-     * WikisourceIndexPage constructor.
-     * @param $indexPageUrl The URL (URL-encoded).
+     * @param Wikisource The Wikisource object on which this Index page resides.
      */
-    public function __construct($indexPageUrl)
+    public function __construct(Wikisource $ws)
     {
-        $this->url = $indexPageUrl;
+        $this->wikisource = $ws;
+    }
+
+    /**
+     * Whether this page has been loaded yet. If it hasn't, you need to call one of the load*
+     * methods.
+     */
+    public function loaded()
+    {
+        return isset($this->pageInfo['pageid']);
+    }
+
+    /**
+     * Get an IndexPage given its fully-qualified URL. This is useful because Wikidata only stores
+     * Index page links as full URLs (i.e. not as site links).
+     * @param string $url
+     * @throws Exception If the URL is not for an existing Index page.
+     */
+    public function loadFromUrl($url)
+    {
+        preg_match("|wikisource.org/wiki/(.*)|i", $url, $matches);
+        if (!isset($matches[1])) {
+            throw new Exception("Unable to find page title in: $url");
+        }
+        $title = $matches[1];
+
+        $cacheKey = 'indexpage'.md5($url);
+        if ($pageInfo = $this->wikisource->getWikisoureApi()->cacheGet($cacheKey)) {
+            $this->wikisource->getWikisoureApi()->getLogger()->info(
+                "Using cached page info for $url"
+            );
+            $this->pageInfo = $pageInfo;
+            return;
+        }
+
+        // Query to make sure the page title exists and is an Index page.
+        $req = new FluentRequest();
+        $req->setAction('query');
+        $req->addParams(['titles' => $title, 'prop'=>'info', 'inprop'=>'url']);
+        $res = $this->wikisource->sendApiRequest($req, 'query.pages');
+        if (!isset($res[0])) {
+            throw new Exception("Unable to load IndexPage from URL: $url");
+        }
+        $indexPageInfo = $res[0];
+        if ($indexPageInfo['ns'] != $this->wikisource->getNamespaceId(Wikisource::NS_NAME_INDEX)) {
+            throw new Exception("Page at this URL is not an Index page: $url");
+        }
+
+        $this->pageInfo = $indexPageInfo;
+        $this->wikisource->getWikisoureApi()->cacheSet($cacheKey, $this->pageInfo, 24*60*60);
     }
 
     /**
      * Get the Index page URL.
-     * @return string
+     * @return string The URL.
+     * @throws Exception if this is called before one of the load* methods.
      */
     public function getUrl()
     {
-
-        return $this->url;
+        if (!isset($this->pageInfo['canonicalurl'])) {
+            throw new Exception("Index page is not loaded");
+        }
+        return $this->pageInfo['canonicalurl'];
     }
 
     /**
      * Get the normalised (spaces rather than underscores etc.) version of the title.
      * @return string
+     * @throws Exception if this is called before one of the load* methods.
      */
     public function getTitle()
     {
-
-        // $title = new Title
-        $colonPos = strpos($this->url, ':', strlen('https://'));
-        $titlePart = urldecode(substr($this->url, $colonPos + 1));
-        return str_replace('_', ' ', $titlePart);
+        if (!isset($this->pageInfo['title'])) {
+            throw new Exception("Index page is not loaded");
+        }
+        return $this->pageInfo['title'];
     }
 
     /**
@@ -55,8 +109,17 @@ class IndexPage
     {
         if (!$this->pageCrawler instanceof Crawler) {
             $client = new Client();
-            $indexPage = $client->request('GET', $this->url);
-            $pageHtml = $indexPage->getBody()->getContents();
+            $cacheKey = 'indexpagehtml'.md5($this->getUrl());
+            $pageHtml = $this->wikisource->getWikisoureApi()->cacheGet($cacheKey);
+            if ($pageHtml === false) {
+                $indexPage = $client->request('GET', $this->getUrl());
+                $pageHtml = $indexPage->getBody()->getContents();
+                $this->wikisource->getWikisoureApi()->cacheSet($cacheKey, $pageHtml, 60*5);
+            } else {
+                $this->wikisource->getWikisoureApi()->getLogger()->info(
+                    "Using cached HTML for index page ".$this->getTitle()
+                );
+            }
             $this->pageCrawler = new Crawler;
             $this->pageCrawler->addHTMLContent($pageHtml, 'UTF-8');
         }
@@ -72,7 +135,7 @@ class IndexPage
     public function getPageList()
     {
 
-        preg_match('/(.*wikisource.org)/', $this->url, $matches);
+        preg_match('/(.*wikisource.org)/', $this->pageInfo['canonicalurl'], $matches);
         $baseUrl = isset($matches[1]) ? $matches[1] : false;
 
         $pageCrawler = $this->getHtmlCrawler();
@@ -109,16 +172,15 @@ class IndexPage
 
     /**
      * Get information about a particular child page.
-     * @param $search The info to search for.
-     * @param string The key to search by (see return info params).
-     * @return string[] Info: label, num, url, quality, and title.
-     * @return false If a page could not be found with the given criteria.
-     * @throws \Exception If the requested page isn't found.
+     * @param string $search The info to search for.
+     * @param string $key The key to search by (see return info params).
+     * @return string[] Info: 'label', 'num', 'url', 'quality', and 'title'.
+     * @return boolean False if a page could not be found with the given criteria.
      */
     public function getChildPageInfo($search, $key = 'num')
     {
-        $pagelist = $this->getPageList();
-        foreach ($pagelist as $p) {
+        $pageList = $this->getPageList();
+        foreach ($pageList as $p) {
             if ($p[$key] == $search) {
                 return $p;
             }
@@ -140,29 +202,5 @@ class IndexPage
                 return $q;
             }
         }
-    }
-
-    /**
-     * Get the API URL. This is just a short-term fix.
-     * @return string
-     */
-    public function getApiUrl()
-    {
-
-        // <link rel="EditURI" type="application/rsd+xml" href="//en.wikisource.org/w/api.php?action=rsd"/>
-        $apiUrl = $this->getHtmlCrawler()->filterXPath("//link[@rel='EditURI']")->attr('href');
-
-        // Remove the suffix.
-        $suffix = '?action=rsd';
-        if (substr($apiUrl, -strlen($suffix)) === $suffix) {
-            $apiUrl = substr($apiUrl, 0, -strlen($suffix));
-        }
-
-        // Add protocol.
-        if (substr($apiUrl, 0, 2) === '//') {
-            $apiUrl = 'https:'.$apiUrl;
-        }
-
-        return $apiUrl;
     }
 }

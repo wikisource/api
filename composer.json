@@ -15,6 +15,7 @@
     },
     "require": {
         "psr/cache": "1.*",
+        "psr/log": "1.*",
         "dflydev/dot-access-data": "^1.0",
         "addwiki/mediawiki-api": "^0.6",
         "symfony/dom-crawler": "^3.1"
@@ -23,6 +24,7 @@
         "jakub-onderka/php-parallel-lint": "^0.9.2",
         "mediawiki/mediawiki-codesniffer": "^0.7.2",
         "phpunit/phpunit": "~4.8",
-        "tedivm/stash": "dev-master"
+        "tedivm/stash": "dev-master",
+        "apix/log": "^1.2"
     }
 }

@@ -30,10 +30,10 @@ class WikidataQuery
 
     protected function getXml($query)
     {
-        $url = "https://query.wikidata.org/bigdata/namespace/wdq/sparql?query=" . urlencode($query);
-        $result = file_get_contents($url);
-        $xml = new \SimpleXmlElement($result);
-        return $xml;
+        $url = "https://query.wikidata.org/bigdata/namespace/wdq/sparql?query=".urlencode($query);
+        $client = new Client();
+        $response = $client->request('GET', $url);
+        return new SimpleXmlElement($response->getBody()->getContents());
     }
 
     protected function getBindings($xml)
