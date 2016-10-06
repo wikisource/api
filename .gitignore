@@ -2,4 +2,6 @@
 /.idea/
 /composer.lock
 /examples/cache/
+/docs/api/
+/phpdoc.xml
 

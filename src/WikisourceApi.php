@@ -1,25 +1,39 @@
 <?php
+/**
+ * This file includes only the WikisourceApi class.
+ * @package WikisourceApi
+ */
 
 namespace Wikisource\Api;
 
-use Apix\Log\Logger\LoggerInterface;
-use Dflydev\DotAccessData\Data;
-use Mediawiki\Api\FluentRequest;
-use Mediawiki\Api\MediawikiApi;
+use Psr\Log\LoggerInterface;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Log\NullLogger;
 
+/**
+ * Class WikisourceApi
+ */
 class WikisourceApi
 {
 
     /** @var CacheItemPoolInterface */
     protected $cachePool;
 
-    /** @var \Psr\Log\LoggerInterface */
+    /** @var LoggerInterface */
     protected $logger;
 
+    public function __construct()
+    {
+        $this->logger = new NullLogger();
+    }
+
     /**
-     * Set the logger.
-     * @param LoggerInterface $logger
+     * Set the logger
+     *
+     * There's no corresponding getLogger() method because the Logger is expected to be passed
+     * through to objects created within by class.
+     * @param LoggerInterface $logger A logger interface if you want to enable logging.
+     * @return void
      */
     public function setLogger(LoggerInterface $logger)
     {
@@ -27,14 +41,10 @@ class WikisourceApi
     }
 
     /**
-     * Get the logger.
-     * @return \Psr\Log\LoggerInterface
+     * Enable caching
+     * @param CacheItemPoolInterface $pool The cache pool.
+     * @return void
      */
-    public function getLogger()
-    {
-        return $this->logger;
-    }
-
     public function setCache(CacheItemPoolInterface $pool)
     {
         $this->cachePool = $pool;
@@ -44,12 +54,13 @@ class WikisourceApi
      * Cache a value (if caching is in use; otherwise do nothing).
      * @param string $key The cache item's key (i.e. a unique name for it).
      * @param mixed $value A value supported by the cache system.
-     * @param int|\DateInteval The lifetime of the cached item.
+     * @param integer|\DateInterval $lifetime The lifetime of the cached item.
+     * @return void
      */
     public function cacheSet($key, $value, $lifetime = 3600)
     {
         if ($this->cachePool !== null) {
-            $this->getLogger()->debug("Caching $key");
+            $this->logger->debug("Caching $key for ".number_format($lifetime / 60)." minutes");
             $cacheItem = $this->cachePool->getItem($key)
                 ->set($value)
                 ->expiresAfter($lifetime);
@@ -58,46 +69,68 @@ class WikisourceApi
     }
 
     /**
-     * Retrieve an item from the cache, if caching is in use.
+     * Retrieve an item from the cache, if caching is in use
+     *
+     * This is no good for cached items that are strictly equal to false.
+     *
+     * @param string $key The cache key.
      * @return mixed
      */
     public function cacheGet($key)
     {
-        if ($this->cachePool !== null && $this->cachePool->getItem($key)->isHit()) {
-            return $this->cachePool->getItem($key)->get();
+        if ($this->cachePool === null) {
+            return false;
         }
+        $this->logger->debug("Getting cache item $key");
+        // Fluent interface doesn't work here because AbstractLogger::__destruct() will be called
+        // too soon.
+        $item = $this->cachePool->getItem($key);
+        if ($item->isHit()) {
+            return $item->get();
+        }
+        $this->logger->debug("$key is not in the cache");
         return false;
     }
 
     /**
+     * Get a list of all Wikisources
+     *
+     * @param integer $cacheLifetime The life of the cache (if one's in use).
      * @return Wikisource[]
      */
-    public function fetchWikisources()
+    public function fetchWikisources($cacheLifetime = null)
     {
-        if ($cached = $this->cacheGet('wikisources')) {
+        $cached = $this->cacheGet('wikisources');
+        if ($cached) {
+            $this->logger->debug("Using cached list of Wikisources");
             return $cached;
         }
+        $this->logger->debug("Requesting list of Wikisources from Wikidata");
         $query =
             "SELECT ?langCode ?langName WHERE { "
-            // Instance of Wikisource language edition
+            // Instance of Wikisource language edition.
             . "?item wdt:P31 wd:Q15156455 . "
-            // Wikimedia language code
+            // Wikimedia language code.
             . "?item wdt:P424 ?langCode . "
-            // language of work or name
+            // Language of work or name.
             . "?item wdt:P407 ?lang . "
-            // RDF label of the language, in the language
+            // RDF label of the language, in the language.
             . "?lang rdfs:label ?langName . FILTER(LANG(?langName) = ?langCode) . "
             . "}";
         $wdQuery = new WikidataQuery($query);
         $data = $wdQuery->fetch();
         $wikisources = [];
         foreach ($data as $langInfo) {
-            $ws = new Wikisource($this);
+            $ws = new Wikisource($this, $this->logger);
             $ws->setLanguageCode($langInfo['langCode']);
             $ws->setLanguageName($langInfo['langName']);
             $wikisources[] = $ws;
         }
-        $this->cacheSet('wikisources', $wikisources);
+        if (!is_numeric($cacheLifetime)) {
+            $cacheLifetime = 60 * 60 * 24 * 30;
+        }
+        $this->logger->debug("Caching list of Wikisoruces for $cacheLifetime");
+        $this->cacheSet('wikisources', $wikisources, $cacheLifetime);
         return $wikisources;
     }
 
@@ -105,7 +138,7 @@ class WikisourceApi
      * Get a single Wikisource by language code.
      * @param string $langCode The ISO language code.
      * @return Wikisource The requested Wikisource.
-     * @throws Exception If the requested Wikisource doesn't exist
+     * @throws WikisourceApiException If the requested Wikisource doesn't exist.
      */
     public function fetchWikisource($langCode)
     {
@@ -114,7 +147,7 @@ class WikisourceApi
                 return $ws;
             }
         }
-        throw new Exception("Wikisource '$langCode' does not exist");
+        throw new WikisourceApiException("Wikisource '$langCode' does not exist");
     }
 
     /**
@@ -127,11 +160,11 @@ class WikisourceApi
     {
         preg_match('|//([a-z]{2,3}).wikisource.org|i', $url, $matches);
         if (!isset($matches[1])) {
-            $this->getLogger()->debug("Unable to find Wikisource URL in: $url");
+            $this->logger->debug("Unable to find Wikisource URL in: $url");
             return false;
         }
         $langCode = $matches[1];
-        $ws = new Wikisource($this);
+        $ws = new Wikisource($this, $this->logger);
         $ws->setLanguageCode($langCode);
         return $ws;
     }

@@ -1,15 +1,30 @@
 <?php
+/**
+ * This file contains only the WikidataQuery class.
+ * @package WikisourceApi
+ */
 
 namespace Wikisource\Api;
 
+use GuzzleHttp\Client;
+use SimpleXMLElement;
+
+/**
+ * Class WikidataQuery
+ */
 class WikidataQuery
 {
 
-    /**
-     * @var string The Sparql query to run.
-     */
+    /** @var \Psr\Log\LoggerInterface */
+    protected $logger;
+
+    /** @var string The Sparql query to run. */
     protected $query;
 
+    /**
+     * WikidataQuery constructor.
+     * @param string $query The Sparql query to execute.
+     */
     public function __construct($query)
     {
         $this->query = $query;
@@ -28,15 +43,25 @@ class WikidataQuery
         return $out;
     }
 
+    /**
+     * Get the XML result of a Sparql query.
+     * @param string $query The Sparql query to execute.
+     * @return SimpleXMLElement
+     */
     protected function getXml($query)
     {
         $url = "https://query.wikidata.org/bigdata/namespace/wdq/sparql?query=".urlencode($query);
         $client = new Client();
         $response = $client->request('GET', $url);
-        return new SimpleXmlElement($response->getBody()->getContents());
+        return new SimpleXMLElement($response->getBody()->getContents());
     }
 
-    protected function getBindings($xml)
+    /**
+     * Restructure the XML that comes back from the Wikidata Query Service
+     * @param SimpleXMLElement $xml The XML for one result item.
+     * @return array
+     */
+    protected function getBindings(SimpleXMLElement $xml)
     {
         $out = [];
         foreach ($xml->binding as $binding) {

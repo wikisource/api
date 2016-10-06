@@ -8,5 +8,6 @@ install:
   - composer install
 
 script:
-  - vendor/bin/phpcs -ps
+  - vendor/bin/phpcs -s
   - vendor/bin/parallel-lint . --exclude vendor
+  - vendor/bin/phpdoc -q --template=checkstyle & grep error docs/api/checkstyle.xml

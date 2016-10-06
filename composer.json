@@ -24,7 +24,9 @@
         "jakub-onderka/php-parallel-lint": "^0.9.2",
         "mediawiki/mediawiki-codesniffer": "^0.7.2",
         "phpunit/phpunit": "~4.8",
+        "phpdocumentor/phpdocumentor": "^2.9",
         "tedivm/stash": "dev-master",
-        "apix/log": "^1.2"
+        "monolog/monolog": "^1.21",
+        "eloquent/asplode": "^2.2"
     }
 }

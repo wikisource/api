@@ -1,5 +1,15 @@
 <?php
+/**
+ * This example retrieves a single Work from a Wikisource
+ *
+ * It displays some basic information about the Work.
+ *
+ * @package WikisourceApi
+ */
 
+/**
+ * Composer autoloading
+ */
 require __DIR__.'/../vendor/autoload.php';
 
 $wsApi = new \Wikisource\Api\WikisourceApi();

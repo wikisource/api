@@ -6,6 +6,25 @@
     -->
     <file>./</file>
     <exclude-pattern>./vendor/*</exclude-pattern>
-    <exclude-pattern>./examples/cache/</exclude-pattern>
+    <exclude-pattern>./docs/*</exclude-pattern>
+    <exclude-pattern>./examples/cache/*</exclude-pattern>
     <rule ref="PSR2" />
+    <rule ref="Squiz.Commenting">
+        <exclude name="Generic" />
+        <exclude name="Squiz.Commenting.ClosingDeclarationComment" />
+        <exclude name="Squiz.Commenting.FileComment.MissingSubpackageTag" />
+        <exclude name="Squiz.Commenting.FunctionComment.ScalarTypeHintMissing" />
+        <exclude name="Squiz.Commenting.FunctionComment.SpacingAfterParamName" />
+        <exclude name="Squiz.Commenting.FunctionComment.SpacingAfterParamType" />
+        <!--
+        <exclude name="" />
+        <exclude name="" />
+        <exclude name="" />
+        <exclude name="" />
+        <exclude name="" />
+        <exclude name="" />
+        <exclude name="" />
+        <exclude name="" />
+        -->
+    </rule>
 </ruleset>

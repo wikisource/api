@@ -1,11 +1,19 @@
 <?php
+/**
+ * This file contains only the Wikisource class.
+ * @package WikisourceApi
+ */
 
 namespace Wikisource\Api;
 
 use Dflydev\DotAccessData\Data;
 use Mediawiki\Api\FluentRequest;
 use Mediawiki\Api\MediawikiApi;
+use Psr\Log\LoggerInterface;
 
+/**
+ * Class Wikisource
+ */
 class Wikisource
 {
     const NS_NAME_INDEX = 'Index';
@@ -19,13 +27,18 @@ class Wikisource
     /** @var string */
     protected $langName;
 
+    /** @var \Psr\Log\LoggerInterface */
+    protected $logger;
+
     /**
-     * Wikisource constructor.
-     * @param WikisourceApi $wikisourceApi
+     * Wikisource constructor
+     * @param WikisourceApi $wikisourceApi The WikisourceApi that this Wikisource is attached to.
+     * @param LoggerInterface $logger A logger interface to be used for logging.
      */
-    public function __construct(WikisourceApi $wikisourceApi)
+    public function __construct(WikisourceApi $wikisourceApi, LoggerInterface $logger)
     {
         $this->api = $wikisourceApi;
+        $this->logger = $logger;
     }
 
     /**
@@ -36,18 +49,39 @@ class Wikisource
         return $this->api;
     }
 
+    /**
+     * Set this Wikisource's language code.
+     * @param string $code The ISO-639 code for this Wikisource's language.
+     * @return void
+     */
     public function setLanguageCode($code)
     {
         $this->langCode = $code;
     }
+
+    /**
+     * Get the ISO-639 language code (and subdomain string) of this Wikisource.
+     * @return string The language code.
+     */
     public function getLanguageCode()
     {
         return $this->langCode;
     }
+
+    /**
+     * Set this Wikisource's language name, in the language in question.
+     * @param string $name The language name.
+     * @return void
+     */
     public function setLanguageName($name)
     {
         $this->langName = $name;
     }
+
+    /**
+     * Get this Wikisource's language name, in the language in question.
+     * @return string The language name.
+     */
     public function getLanguageName()
     {
         return $this->langName;
@@ -66,39 +100,48 @@ class Wikisource
     /**
      * Get an IndexPage object given its URL.
      * @param string $url The URL.
-     * @return
+     * @return IndexPage
      */
     public function getIndexPageFromUrl($url)
     {
-        $indexPage = new IndexPage($this);
+        $indexPage = new IndexPage($this, $this->logger);
         $indexPage->loadFromUrl($url);
         return $indexPage;
     }
 
     /**
-     * Get the ID of a namespace.
-     * @param string The canonical name of the namespace.
-     * @return integer The namespace ID.
+     * Get the ID of a given namespace
+     *
+     * The canonical names of namespaces of interest to Wikisources are defined as constants in
+     * this class, starting with 'NS_NAME_'. Note that not all Wikisources have the ProofreadPage
+     * extension installed, and so requests for Index and Page namespaces will not always work.
+     *
+     * @param string $namespaceName The canonical name of the namespace.
+     * @return integer The namespace ID, or false if it can't be found.
      */
     public function getNamespaceId($namespaceName)
     {
-        // Find the Index namespace ID.
-        $req = FluentRequest::factory()
-            ->setAction('query')
-            ->setParam('meta', 'siteinfo')
-            ->setParam('siprop', 'namespaces');
-
-        $namespaces = $this->sendApiRequest($req, 'query.namespaces');
-        $indexNsId = null; // Some don't have ProofreadPage extension installed.
+        $cacheKey = 'namespaces'.$this->getLanguageCode();
+        if ($namespaces = $this->getWikisoureApi()->cacheGet($cacheKey)) {
+            $this->logger->debug("Using cached namespace data for ".$this->getLanguageCode());
+        } else {
+            $this->logger->debug("Requesting namespace data for ".$this->getLanguageCode());
+            $request = FluentRequest::factory()
+                    ->setAction('query')
+                    ->setParam('meta', 'siteinfo')
+                    ->setParam('siprop', 'namespaces');
+            $namespaces = $this->sendApiRequest($request, 'query.namespaces');
+        }
         foreach ($namespaces as $ns) {
             if (isset($ns['canonical']) && $ns['canonical'] === $namespaceName) {
                 return $ns['id'];
             }
         }
-
+        return false;
     }
 
     /**
+     * Get a MediawikiApi object for interacting with this Wikisource.
      * @return MediawikiApi
      */
     public function getMediawikiApi()
@@ -109,7 +152,7 @@ class Wikisource
 
     /**
      * Run an API query on this Wikisource.
-     * @param FluentRequest $request The request to send
+     * @param FluentRequest $request The request to send.
      * @param string $resultKey The dot-delimited array key of the results (e.g. for a pageprop
      * query, it's 'query.pages').
      * @return array
@@ -120,8 +163,7 @@ class Wikisource
         $continue = true;
         do {
             // Send request and save data for later returning.
-            $logMsg = "API request: ".json_encode($request->getParams());
-            $this->getWikisoureApi()->getLogger()->debug($logMsg);
+            $this->logger->debug("API request: ".json_encode($request->getParams()));
             $result = new Data($this->getMediawikiApi()->getRequest($request));
             $resultingData = $result->get($resultKey);
             if (!is_array($resultingData)) {
