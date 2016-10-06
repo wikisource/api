@@ -31,7 +31,7 @@ class Work
     /** @var string */
     protected $year;
 
-    /** @var \Psr\Log\LoggerInterface */
+    /** @var \Psr\Log\LoggerInterface The logger to use */
     protected $logger;
 
     /** @var string The Wikidata Q-number of this Work */

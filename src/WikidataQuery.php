@@ -15,7 +15,7 @@ use SimpleXMLElement;
 class WikidataQuery
 {
 
-    /** @var \Psr\Log\LoggerInterface */
+    /** @var \Psr\Log\LoggerInterface The logger to use */
     protected $logger;
 
     /** @var string The Sparql query to run. */

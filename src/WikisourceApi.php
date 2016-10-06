@@ -19,7 +19,7 @@ class WikisourceApi
     /** @var CacheItemPoolInterface */
     protected $cachePool;
 
-    /** @var LoggerInterface */
+    /** @var \Psr\Log\LoggerInterface The logger to use */
     protected $logger;
 
     public function __construct()

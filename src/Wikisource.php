@@ -27,7 +27,7 @@ class Wikisource
     /** @var string */
     protected $langName;
 
-    /** @var \Psr\Log\LoggerInterface */
+    /** @var \Psr\Log\LoggerInterface The logger to use */
     protected $logger;
 
     /**

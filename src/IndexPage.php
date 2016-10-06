@@ -27,7 +27,7 @@ class IndexPage
     /** @var Crawler The HTML scraping system */
     protected $pageCrawler;
 
-    /** @var \Psr\Log\LoggerInterface */
+    /** @var \Psr\Log\LoggerInterface The logger to use */
     protected $logger;
 
     /**
