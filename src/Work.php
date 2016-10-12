@@ -8,6 +8,7 @@ namespace Wikisource\Api;
 
 use Dflydev\DotAccessData\Data;
 use Mediawiki\Api\FluentRequest;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
@@ -22,30 +23,38 @@ class Work
     /** @var Wikisource The Wikisource on which this Work is hosted */
     protected $ws;
 
-    /** @var string The normalized page title */
-    protected $pageTitle;
-
-    /** @var string */
-    protected $workTitle;
-
-    /** @var string */
-    protected $year;
-
     /** @var \Psr\Log\LoggerInterface The logger to use */
     protected $logger;
 
     /** @var string The Wikidata Q-number of this Work */
     protected $wikidataItem;
 
+    /** @var string[] The raw data from the ws-* microformat elements. */
+    protected $microformatData;
+
+    /** @var string The normalized page title. */
+    protected $pageTitle;
+
+    /** @var string The actual work title. */
+    protected $workTitle;
+
+    /** @var string The year of publication. */
+    protected $year;
+
+    /** @var string The name of the publisher. */
+    protected $publisher;
+
     /**
-     * Create a new Work object.
+     * Create a new Work from a given page title in a Wikisource.
      * @param Wikisource $wikisource The Wikisource on which this Work is hosted.
      * @param string $pageTitle The name of the work's main page (or any subpage, in which case the
      * top-level page will be determined and used accordingly).
+     * @param LoggerInterface $logger The logger instance.
      */
-    public function __construct(Wikisource $wikisource, $pageTitle)
+    public function __construct(Wikisource $wikisource, $pageTitle, LoggerInterface $logger)
     {
         $this->ws = $wikisource;
+        $this->logger = $logger;
         // If this is a subpage, determine the main-page. This is just a temporary thing until
         // someone calls getPageTitle() and we normalise it; don't want to do that now, in case it's
         // not necessary.
@@ -62,17 +71,21 @@ class Work
      */
     public function getPageTitle()
     {
+        if ($this->pageTitle !== null) {
+            return $this->pageTitle;
+        }
         $parse = $this->fetchPageParse();
         $this->pageTitle = $parse->get('title');
         return $this->pageTitle;
     }
 
     /**
-     * @return Data
+     * Fetch the parsed page text, templates, and categories.
+     * @return Data The page data.
      */
     protected function fetchPageParse()
     {
-        $cacheKey = 'work.'.$this->pageTitle;
+        $cacheKey = 'work.' . $this->pageTitle;
         $cacheItem = $this->ws->getWikisoureApi()->cacheGet($cacheKey);
         if ($cacheItem !== false) {
             $this->logger->debug("Using cached page parse data for $this->pageTitle");
@@ -94,7 +107,12 @@ class Work
      */
     public function getWikidataItemNumber()
     {
-        $pageParse = $this->fetchPageParse();
+        $cacheKey = 'work.wikidataitem.' . $this->pageTitle;
+        $cacheItem = $this->ws->getWikisoureApi()->cacheGet($cacheKey);
+        if ($cacheItem !== false) {
+            $this->logger->debug("Using cached Wikidata number for $this->pageTitle");
+            return $cacheItem;
+        }
         // Get the Wikidata Item.
         $requestProps = FluentRequest::factory()
                 ->setAction('query')
@@ -103,60 +121,109 @@ class Work
                 ->setParam('ppprop', 'wikibase_item');
         $pageProps = $this->ws->sendApiRequest($requestProps, 'query.pages');
         $pagePropsSingle = new Data(array_shift($pageProps));
-        return $pagePropsSingle->get('pageprops.wikibase_item');
+        $wikidataItemNumber = $pagePropsSingle->get('pageprops.wikibase_item');
+        $this->logger->debug("Caching Wikidata number for $this->pageTitle");
+        $this->ws->getWikisoureApi()->cacheSet($cacheKey, $wikidataItemNumber, 24 * 60 * 60);
+        return $wikidataItemNumber;
     }
 
     /**
-     * Get the Work's title (which may differ from the page's title)
-     * @return string
+     * Retrieve all 'ws-*' microformat values.
+     * @link https://wikisource.org/wiki/Wikisource:Microformat
+     * @return string[] An array of values, keyed by the microformat identifier (e.g. 'ws-title').
      */
-    public function getWorkTitle()
+    public function getMicroformatData()
     {
-        // Deal with the data from within the page text.
+        if (is_array($this->microformatData)) {
+            return $this->microformatData;
+        }
         // Note the slightly odd way of ensuring the HTML content is loaded as UTF8.
         $pageHtml = $this->fetchPageParse()->get('text.*');
         $pageCrawler = new Crawler();
         $pageCrawler->addHTMLContent("<div>$pageHtml</div>", 'UTF-8');
         // Pull the microformatted-defined attributes.
-        $microformatIds = ['ws-title', 'ws-author', 'ws-year'];
-        $microformatVals = [];
+        $microformatIds = ['ws-title', 'ws-author', 'ws-year', 'ws-publisher', 'ws-place'];
+        $this->microformatData = [];
         foreach ($microformatIds as $i) {
             $el = $pageCrawler->filterXPath("//*[@id='$i']");
-            $microformatVals[$i] = ($el->count() > 0) ? $el->text() : '';
+            $this->microformatData[$i] = ($el->count() > 0) ? $el->text() : '';
         }
-        $this->workTitle = $microformatVals['ws-title'];
-        $this->year = $microformatVals['ws-year'];
-        return $this->workTitle;
-
-        // Save the authors.
-//        $authors = explode('/', $microformatVals['ws-author']);
-//        foreach ($authors as $author) {
-//
-//        }
-
-        // Link the Index pages (i.e. 'templates' that are in the right NS.).
-//        foreach ($pageParse->get('templates') as $tpl) {
-//            if ($tpl['ns'] === (int) $this->currentLang->index_ns_id) {
-//                $this->writeDebug(" -- Linking an index page: " . $tpl['*']);
-//                $indexPageName = $tpl['*'];
-//                $indexPageId = $this->getOrCreateRecord('index_pages', $indexPageName);
-//                $sqlInsertIndexes = 'INSERT IGNORE INTO `works_indexes` SET index_page_id=:ip, work_id=:w';
-//                $this->db->query($sqlInsertIndexes, ['ip' => $indexPageId, 'w' => $workId]);
-//                $this->getIndexPageMetadata($indexPageName, $workId);
-//            }
-//        }
-//
-//        // Save the categories.
-//        foreach ($pageParse->get('categories') as $cat) {
-//            if (isset($cat['hidden'])) {
-//                continue;
-//            }
-//        }
+        return $this->microformatData;
     }
 
+    /**
+     * Get the Work's title (which may differ from the page's title)
+     * @return string|boolean The title, or false if it could not be found.
+     */
+    public function getWorkTitle()
+    {
+        $microformatData = $this->getMicroformatData();
+        if (!isset($microformatData['ws-title'])) {
+            return false;
+        }
+        $this->workTitle = $microformatData['ws-title'];
+        return $this->workTitle;
+    }
+
+    /**
+     * Get the name of the Work's publisher.
+     * @return string|boolean The publisher, or false if it could not be found.
+     */
+    public function getPublisher()
+    {
+        $microformatData = $this->getMicroformatData();
+        if (!isset($microformatData['ws-publisher'])) {
+            return false;
+        }
+        return $microformatData['ws-publisher'];
+    }
+
+    /**
+     * Get the Work's Author's names.
+     * @return array|boolean An array of Author names, or false if none could be found.
+     */
+    public function getAuthors()
+    {
+        $microformatData = $this->getMicroformatData();
+        if (!isset($microformatData['ws-author'])) {
+            return false;
+        }
+        $authors = explode('/', $microformatData['ws-author']);
+        foreach ($authors as $author) {
+
+        }
+        return $authors;
+    }
+
+    /**
+     * Get the Work's categories.
+     * @param boolean $excludeHidden Whether to exclude hidden categories.
+     * @return string[] The Work's categories.
+     */
+    public function getCategories($excludeHidden = true)
+    {
+        $pageParse = $this->fetchPageParse();
+        $categories = [];
+        foreach ($pageParse->get('categories') as $cat) {
+            if ($excludeHidden && isset($cat['hidden'])) {
+                continue;
+            }
+            $categories = $cat;
+        }
+        return $categories;
+    }
+
+    /**
+     * Get the year of publication.
+     * @return boolean|string The year, or false if it can't be determined.
+     */
     public function getYear()
     {
-        return $this->year;
+        $microformatData = $this->getMicroformatData();
+        if (!isset($microformatData['ws-year'])) {
+            return false;
+        }
+        return $microformatData['ws-year'];
     }
 
     /**
@@ -172,7 +239,6 @@ class Work
                 $this->logger->debug("Linking an index page: " . $tpl['*']);
                 echo $indexPageName = $tpl['*'];
                 $indexPage = new IndexPage($this->ws, $this->logger);
-                //$indexPage->l
                 $indexPages[] = $indexPage;
             }
         }

@@ -73,6 +73,7 @@ The default cache times are as follows:
 | ------------- | ----------------- | ------------- |
 | List of Wikisources | 30 days | Parameter to `WikisourceApi::getWikisources()` |
 | Index Page metadata | 1 hour | Parameter to `IndexPage::__construct()` |
+| A Work's Wikidata Item number | 1 day | *Not possible* |
 
 ## Logging
 

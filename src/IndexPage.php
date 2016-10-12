@@ -30,7 +30,7 @@ class IndexPage
     /** @var \Psr\Log\LoggerInterface The logger to use */
     protected $logger;
 
-    /** @var \DateInterval|integer */
+    /** @var \DateInterval|integer The time to keep the cached Index page metadata for. */
     protected $cacheLifetime;
 
     /**

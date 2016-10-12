@@ -18,13 +18,13 @@ class Wikisource
 {
     const NS_NAME_INDEX = 'Index';
 
-    /** @var WikisourceApi */
+    /** @var WikisourceApi The parent API object. */
     protected $api;
 
-    /** @var string */
+    /** @var string The language code of this Wikisource. */
     protected $langCode;
 
-    /** @var string */
+    /** @var string The name of the language of this Wikisource, in that language. */
     protected $langName;
 
     /** @var \Psr\Log\LoggerInterface The logger to use */
@@ -42,6 +42,7 @@ class Wikisource
     }
 
     /**
+     * Get the parent API object, that this Wikisource was created from.
      * @return WikisourceApi
      */
     public function getWikisoureApi()
@@ -94,7 +95,7 @@ class Wikisource
      */
     public function getWork($pageName)
     {
-        return new Work($this, $pageName);
+        return new Work($this, $pageName, $this->logger);
     }
 
     /**

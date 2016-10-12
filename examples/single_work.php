@@ -14,18 +14,25 @@ require __DIR__.'/../vendor/autoload.php';
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
+use Stash\Pool;
+use Stash\Driver\FileSystem;
 
 $wsApi = new \Wikisource\Api\WikisourceApi();
+
+// Cache.
+$cache = new Pool(new FileSystem(['path' => __DIR__.'/cache']));
+$wsApi->setCache($cache);
 
 // Logging.
 $logger = new Logger('WikisourceApi');
 $logger->pushHandler(new StreamHandler('php://stdout', Logger::DEBUG));
 $wsApi->setLogger($logger);
 
-echo "Fetching English Wikisource . . . ";
 $wikisource = $wsApi->fetchWikisource('en');
-echo "done.\nFetching 'Pride and Prejudice' . . . ";
 $work = $wikisource->getWork('Pride and Prejudice');
-echo "done.\n".$work->getWorkTitle()
+
+echo "\n'".$work->getWorkTitle()."'"
+     .' by '.join(', ', $work->getAuthors())
      .' was published in '.$work->getYear()
-     .' and is identified by '.$work->getWikidataItemNumber()."\n";
+     .' by '.$work->getPublisher()
+     .' and is identified with '.$work->getWikidataItemNumber()."\n";

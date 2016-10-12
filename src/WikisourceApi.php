@@ -16,10 +16,10 @@ use Psr\Log\NullLogger;
 class WikisourceApi
 {
 
-    /** @var CacheItemPoolInterface */
+    /** @var CacheItemPoolInterface The cache pool. */
     protected $cachePool;
 
-    /** @var \Psr\Log\LoggerInterface The logger to use */
+    /** @var \Psr\Log\LoggerInterface The logger to use. */
     protected $logger;
 
     /**
@@ -78,7 +78,7 @@ class WikisourceApi
      * This is no good for cached items that are strictly equal to false.
      *
      * @param string $key The cache key.
-     * @return mixed
+     * @return mixed|boolean Either the cached data, or false if no data was found.
      */
     public function cacheGet($key)
     {
@@ -104,25 +104,27 @@ class WikisourceApi
      */
     public function fetchWikisources($cacheLifetime = null)
     {
-        $cached = $this->cacheGet('wikisources');
-        if ($cached) {
-            $this->logger->debug("Using cached list of Wikisources");
-            return $cached;
+        $data = $this->cacheGet('wikisources');
+        if ($data === false) {
+            $this->logger->debug("Requesting list of Wikisources from Wikidata");
+            $query =
+                "SELECT ?langCode ?langName WHERE { "
+                // Instance of Wikisource language edition.
+                . "?item wdt:P31 wd:Q15156455 . "
+                // Wikimedia language code.
+                . "?item wdt:P424 ?langCode . "
+                // Language of work or name.
+                . "?item wdt:P407 ?lang . "
+                // RDF label of the language, in the language.
+                . "?lang rdfs:label ?langName . FILTER(LANG(?langName) = ?langCode) . " . "}";
+            $wdQuery = new WikidataQuery($query);
+            $data = $wdQuery->fetch();
+            if (!is_numeric($cacheLifetime)) {
+                $cacheLifetime = 60 * 60 * 24 * 30;
+            }
+            $this->logger->debug("Caching list of Wikisoruces for $cacheLifetime");
+            $this->cacheSet('wikisources', $data, $cacheLifetime);
         }
-        $this->logger->debug("Requesting list of Wikisources from Wikidata");
-        $query =
-            "SELECT ?langCode ?langName WHERE { "
-            // Instance of Wikisource language edition.
-            . "?item wdt:P31 wd:Q15156455 . "
-            // Wikimedia language code.
-            . "?item wdt:P424 ?langCode . "
-            // Language of work or name.
-            . "?item wdt:P407 ?lang . "
-            // RDF label of the language, in the language.
-            . "?lang rdfs:label ?langName . FILTER(LANG(?langName) = ?langCode) . "
-            . "}";
-        $wdQuery = new WikidataQuery($query);
-        $data = $wdQuery->fetch();
         $wikisources = [];
         foreach ($data as $langInfo) {
             $ws = new Wikisource($this, $this->logger);
@@ -130,11 +132,6 @@ class WikisourceApi
             $ws->setLanguageName($langInfo['langName']);
             $wikisources[] = $ws;
         }
-        if (!is_numeric($cacheLifetime)) {
-            $cacheLifetime = 60 * 60 * 24 * 30;
-        }
-        $this->logger->debug("Caching list of Wikisoruces for $cacheLifetime");
-        $this->cacheSet('wikisources', $wikisources, $cacheLifetime);
         return $wikisources;
     }
 
