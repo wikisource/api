@@ -60,17 +60,19 @@ $cache = new Pool(new FileSystem(['path' => __DIR__.'/cache']));
 $wsApi->setCache($cache);
 ````
 
-See the `examples/` directory for fully-functioning examples that you can run straight away from the command line.
+See the `examples/` directory for fully-functioning examples
+that you can run straight away from the command line.
 
 ## Caching
 
 Every external request that this library performs will be cached
-if you provide a cache pool via `WikisourceApi::setCache()`. The default cache times are as follows:
+if you provide a cache pool via `WikisourceApi::setCache()`.
+The default cache times are as follows:
 
-| Data | Default lifetime | Override |
-| ------------- | ------------- | ------------- |
+| Data          | Default lifetime  | Override      |
+| ------------- | ----------------- | ------------- |
 | List of Wikisources | 30 days | Parameter to `WikisourceApi::getWikisources()` |
-| Index Page metadata | 5 minutes | Parameter to `IndexPage::__construct()` |
+| Index Page metadata | 1 hour | Parameter to `IndexPage::__construct()` |
 
 ## Logging
 

@@ -30,6 +30,9 @@ class IndexPage
     /** @var \Psr\Log\LoggerInterface The logger to use */
     protected $logger;
 
+    /** @var \DateInterval|integer */
+    protected $cacheLifetime;
+
     /**
      * Create a new IndexPage based on the given Wikisource
      *
@@ -37,12 +40,14 @@ class IndexPage
      *
      * @param Wikisource $ws The Wikisource object on which this Index page resides.
      * @param LoggerInterface $logger A logger interface.
-     * @param integer $cacheLifetime The time interval for which to cache the page's metadata.
+     * @param integer|\DateInterval $cacheLifetime The time interval for which to cache the page's
+     * metadata.
      */
-    public function __construct(Wikisource $ws, LoggerInterface $logger, $cacheLifetime)
+    public function __construct(Wikisource $ws, LoggerInterface $logger, $cacheLifetime = 3600)
     {
         $this->wikisource = $ws;
         $this->logger = $logger;
+        $this->cacheLifetime = $cacheLifetime;
     }
 
     /**
@@ -138,7 +143,7 @@ class IndexPage
             if ($pageHtml === false) {
                 $indexPage = $client->request('GET', $this->getUrl());
                 $pageHtml = $indexPage->getBody()->getContents();
-                $this->wikisource->getWikisoureApi()->cacheSet($cacheKey, $pageHtml, 60*5);
+                $this->wikisource->getWikisoureApi()->cacheSet($cacheKey, $pageHtml, $this->cacheLifetime);
             } else {
                 $this->logger->info("Using cached HTML for index page ".$this->getTitle());
             }
