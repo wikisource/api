@@ -39,9 +39,9 @@ class Work
 
     /**
      * Create a new Work object.
-     * @param Wikisource $wikisource
+     * @param Wikisource $wikisource The Wikisource on which this Work is hosted.
      * @param string $pageTitle The name of the work's main page (or any subpage, in which case the
-     * top-level page will be determined and used accordingly)
+     * top-level page will be determined and used accordingly).
      */
     public function __construct(Wikisource $wikisource, $pageTitle)
     {
@@ -96,15 +96,14 @@ class Work
     {
         $pageParse = $this->fetchPageParse();
         // Get the Wikidata Item.
-        $requestProps =
-            FluentRequest::factory()
+        $requestProps = FluentRequest::factory()
                 ->setAction('query')
                 ->setParam('titles', $this->pageTitle)
                 ->setParam('prop', 'pageprops')
                 ->setParam('ppprop', 'wikibase_item');
         $pageProps = $this->ws->sendApiRequest($requestProps, 'query.pages');
         $pagePropsSingle = new Data(array_shift($pageProps));
-        $this->wikidataItem = $pagePropsSingle->get('pageprops.wikibase_item');
+        return $pagePropsSingle->get('pageprops.wikibase_item');
     }
 
     /**

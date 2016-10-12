@@ -31,7 +31,8 @@ class WikidataQuery
     }
 
     /**
-     * @return string[]
+     * Get the results of this query.
+     * @return string[] Array of results keyed by the names given in the Sparql query.
      */
     public function fetch()
     {

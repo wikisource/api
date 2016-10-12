@@ -22,6 +22,10 @@ class WikisourceApi
     /** @var \Psr\Log\LoggerInterface The logger to use */
     protected $logger;
 
+    /**
+     * Construct a new WikisourceApi object. The logger will default to NullLogger until you set
+     * something else via WikisourceApi::setLogger().
+     */
     public function __construct()
     {
         $this->logger = new NullLogger();
