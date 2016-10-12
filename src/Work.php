@@ -188,9 +188,10 @@ class Work
         if (!isset($microformatData['ws-author'])) {
             return false;
         }
-        $authors = explode('/', $microformatData['ws-author']);
-        foreach ($authors as $author) {
-
+        $authors = [];
+        $authorData = explode('/', $microformatData['ws-author']);
+        foreach ($authorData as $a) {
+            $authors[] = $a;
         }
         return $authors;
     }
