@@ -96,6 +96,10 @@ class IndexPage
             throw new WikisourceApiException("Unable to load IndexPage from URL: $url");
         }
         $indexPageInfo = $res[0];
+        if (!isset($indexPageInfo['ns'])) {
+            $msg = "Unable to find NS in: ".print_r($indexPageInfo, true);
+            throw new WikisourceApiException($msg);
+        }
         if ($indexPageInfo['ns'] != $this->wikisource->getNamespaceId(Wikisource::NS_NAME_INDEX)) {
             throw new WikisourceApiException("Page at this URL is not an Index page: $url");
         }
