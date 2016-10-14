@@ -51,6 +51,15 @@ class IndexPage
     }
 
     /**
+     * Get the Wikisource that this IndexPage is hosted on.
+     * @return Wikisource
+     */
+    public function getWikisource()
+    {
+        return $this->wikisource;
+    }
+
+    /**
      * Whether this page has been loaded yet
      *
      * If it hasn't, you need to call one of the load* methods.
