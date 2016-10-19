@@ -8,6 +8,7 @@ namespace Wikisource\Api;
 
 use Dflydev\DotAccessData\Data;
 use Mediawiki\Api\FluentRequest;
+use Mediawiki\Api\MediawikiFactory;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -21,7 +22,7 @@ use Symfony\Component\DomCrawler\Crawler;
 class Work
 {
     /** @var Wikisource The Wikisource on which this Work is hosted */
-    protected $ws;
+    protected $wikisource;
 
     /** @var \Psr\Log\LoggerInterface The logger to use */
     protected $logger;
@@ -34,6 +35,9 @@ class Work
 
     /** @var string The normalized page title. */
     protected $pageTitle;
+
+    /** @var string The page title as it is prior to being normalized. */
+    protected $pageTitleInitial;
 
     /** @var string The actual work title. */
     protected $workTitle;
@@ -53,16 +57,25 @@ class Work
      */
     public function __construct(Wikisource $wikisource, $pageTitle, LoggerInterface $logger)
     {
-        $this->ws = $wikisource;
+        $this->wikisource = $wikisource;
         $this->logger = $logger;
         // If this is a subpage, determine the main-page. This is just a temporary thing until
         // someone calls getPageTitle() and we normalise it; don't want to do that now, in case it's
         // not necessary.
         if (strpos($pageTitle, '/') !== false) {
-            $this->pageTitle = substr($pageTitle, 0, strpos($pageTitle, '/'));
+            $this->pageTitleInitial = substr($pageTitle, 0, strpos($pageTitle, '/'));
         } else {
-            $this->pageTitle = $pageTitle;
+            $this->pageTitleInitial = $pageTitle;
         }
+    }
+
+    /**
+     * Get the Wikisource to which this Work belongs.
+     * @return Wikisource
+     */
+    public function getWikisource()
+    {
+        return $this->wikisource;
     }
 
     /**
@@ -74,29 +87,30 @@ class Work
         if ($this->pageTitle !== null) {
             return $this->pageTitle;
         }
-        $parse = $this->fetchPageParse();
+        $parse = $this->fetchPageParse($this->pageTitleInitial);
         $this->pageTitle = $parse->get('title');
         return $this->pageTitle;
     }
 
     /**
-     * Fetch the parsed page text, templates, and categories.
+     * Fetch the parsed page text, templates, and categories of a given page.
+     * @param string $title The page to parse.
      * @return Data The page data.
      */
-    protected function fetchPageParse()
+    protected function fetchPageParse($title)
     {
-        $cacheKey = 'work.' . $this->pageTitle;
-        $cacheItem = $this->ws->getWikisoureApi()->cacheGet($cacheKey);
+        $cacheKey = 'work.' . $title;
+        $cacheItem = $this->wikisource->getWikisoureApi()->cacheGet($cacheKey);
         if ($cacheItem !== false) {
-            $this->logger->debug("Using cached page parse data for $this->pageTitle");
+            $this->logger->debug("Using cached page parse data for $title");
             return $cacheItem;
         }
         $requestParse = FluentRequest::factory()
                 ->setAction('parse')
-                ->setParam('page', $this->pageTitle)
+                ->setParam('page', $title)
                 ->setParam('prop', 'text|templates|categories');
-        $pageParse = new Data($this->ws->sendApiRequest($requestParse, 'parse'));
-        $this->ws->getWikisoureApi()->cacheSet($cacheKey, $pageParse);
+        $pageParse = new Data($this->wikisource->sendApiRequest($requestParse, 'parse'));
+        $this->wikisource->getWikisoureApi()->cacheSet($cacheKey, $pageParse);
         return $pageParse;
     }
 
@@ -108,7 +122,7 @@ class Work
     public function getWikidataItemNumber()
     {
         $cacheKey = 'work.wikidataitem.' . $this->pageTitle;
-        $cacheItem = $this->ws->getWikisoureApi()->cacheGet($cacheKey);
+        $cacheItem = $this->wikisource->getWikisoureApi()->cacheGet($cacheKey);
         if ($cacheItem !== false) {
             $this->logger->debug("Using cached Wikidata number for $this->pageTitle");
             return $cacheItem;
@@ -119,11 +133,11 @@ class Work
                 ->setParam('titles', $this->pageTitle)
                 ->setParam('prop', 'pageprops')
                 ->setParam('ppprop', 'wikibase_item');
-        $pageProps = $this->ws->sendApiRequest($requestProps, 'query.pages');
+        $pageProps = $this->wikisource->sendApiRequest($requestProps, 'query.pages');
         $pagePropsSingle = new Data(array_shift($pageProps));
         $wikidataItemNumber = $pagePropsSingle->get('pageprops.wikibase_item');
         $this->logger->debug("Caching Wikidata number for $this->pageTitle");
-        $this->ws->getWikisoureApi()->cacheSet($cacheKey, $wikidataItemNumber, 24 * 60 * 60);
+        $this->wikisource->getWikisoureApi()->cacheSet($cacheKey, $wikidataItemNumber, 24 * 60 * 60);
         return $wikidataItemNumber;
     }
 
@@ -138,9 +152,9 @@ class Work
             return $this->microformatData;
         }
         // Note the slightly odd way of ensuring the HTML content is loaded as UTF8.
-        $pageHtml = $this->fetchPageParse()->get('text.*');
+        $pageHtml = $this->fetchPageParse($this->getPageTitle())->get('text.*');
         $pageCrawler = new Crawler();
-        $pageCrawler->addHTMLContent("<div>$pageHtml</div>", 'UTF-8');
+        $pageCrawler->addHtmlContent("<div>$pageHtml</div>", 'UTF-8');
         // Pull the microformatted-defined attributes.
         $microformatIds = ['ws-title', 'ws-author', 'ws-year', 'ws-publisher', 'ws-place'];
         $this->microformatData = [];
@@ -203,7 +217,7 @@ class Work
      */
     public function getCategories($excludeHidden = true)
     {
-        $pageParse = $this->fetchPageParse();
+        $pageParse = $this->fetchPageParse($this->getPageTitle());
         $categories = [];
         foreach ($pageParse->get('categories') as $cat) {
             if ($excludeHidden && isset($cat['hidden'])) {
@@ -229,18 +243,32 @@ class Work
 
     /**
      * Get a list of Index pages that used to construct this Work.
-     * @return IndexPage[]
+     * @return IndexPage[] An array of Index pages.
      */
     public function getIndexPages()
     {
-        $pageParse = $this->fetchPageParse();
         $indexPages = [];
-        foreach ($pageParse->get('templates') as $tpl) {
-            if ((int)$tpl['ns'] === $this->ws->getNamespaceId(Wikisource::NS_NAME_INDEX)) {
-                $this->logger->debug("Linking an index page: " . $tpl['*']);
-                echo $indexPageName = $tpl['*'];
-                $indexPage = new IndexPage($this->ws, $this->logger);
-                $indexPages[] = $indexPage;
+
+        // First of all, find all subpages of this Work.
+        $f = new MediawikiFactory($this->getWikisource()->getMediawikiApi());
+        $pageListGetter = $f->newPageListGetter();
+        $subpages = $pageListGetter->getFromPrefix($this->getPageTitle());
+
+        // Then, for each of them, find the list of relevant transclusions.
+        foreach ($subpages->toArray() as $subpage) {
+            $subpageTitle = $subpage->getPageIdentifier()->getTitle();
+            $subpageParse = $this->fetchPageParse($subpageTitle->getText());
+            foreach ($subpageParse->get('templates') as $tpl) {
+                $tplNsId = (int) $tpl['ns'];
+                $title = $tpl['*'];
+                $isIndex = $tplNsId === $this->wikisource->getNamespaceId(Wikisource::NS_NAME_INDEX);
+                $alreadyFound = array_key_exists($title, $indexPages);
+                if ($isIndex && ! $alreadyFound) {
+                    $this->logger->debug("Linking an index page: $title");
+                    $indexPage = new IndexPage($this->wikisource, $this->logger);
+                    $indexPage->loadFromTitle($title);
+                    $indexPages[$title] = $indexPage;
+                }
             }
         }
         return $indexPages;

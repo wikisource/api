@@ -36,3 +36,7 @@ echo "\n'".$work->getWorkTitle()."'"
      .' was published in '.$work->getYear()
      .' by '.$work->getPublisher()
      .' and is identified with '.$work->getWikidataItemNumber()."\n";
+
+foreach ($work->getIndexPages() as $indexPage) {
+    echo $indexPage->getTitle()."\n";
+}

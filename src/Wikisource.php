@@ -132,6 +132,7 @@ class Wikisource
                     ->setParam('meta', 'siteinfo')
                     ->setParam('siprop', 'namespaces');
             $namespaces = $this->sendApiRequest($request, 'query.namespaces');
+            $this->getWikisoureApi()->cacheSet($cacheKey, $namespaces);
         }
         foreach ($namespaces as $ns) {
             if (isset($ns['canonical']) && $ns['canonical'] === $namespaceName) {

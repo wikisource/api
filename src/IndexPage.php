@@ -36,7 +36,8 @@ class IndexPage
     /**
      * Create a new IndexPage based on the given Wikisource
      *
-     * This does not run any requests.
+     * After creating an object of this class, call one of the loadFrom* methods to actually
+     * retrieve the data from the Wikisource.
      *
      * @param Wikisource $ws The Wikisource object on which this Index page resides.
      * @param LoggerInterface $logger A logger interface.
@@ -69,6 +70,17 @@ class IndexPage
     public function loaded()
     {
         return isset($this->pageInfo['pageid']);
+    }
+
+    /**
+     * Load this Index page from an Index page title.
+     * @param string $title The title of the MediaWiki page (including 'Index:' or the equivalent).
+     * @return void
+     */
+    public function loadFromTitle($title)
+    {
+        $url = 'https://'.$this->wikisource->getLanguageCode().'.wikisource.org/wiki/'.$title;
+        $this->loadFromUrl($url);
     }
 
     /**
