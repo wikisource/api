@@ -9,6 +9,7 @@ namespace Wikisource\Api;
 use Dflydev\DotAccessData\Data;
 use Mediawiki\Api\FluentRequest;
 use Mediawiki\Api\MediawikiFactory;
+use Mediawiki\Api\UsageException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -96,6 +97,7 @@ class Work
      * Fetch the parsed page text, templates, and categories of a given page.
      * @param string $title The page to parse.
      * @return Data The page data.
+     * @throws UsageException If the page doesn't exist, or something else goes wrong.
      */
     protected function fetchPageParse($title)
     {
@@ -109,7 +111,17 @@ class Work
                 ->setAction('parse')
                 ->setParam('page', $title)
                 ->setParam('prop', 'text|templates|categories');
-        $pageParse = new Data($this->wikisource->sendApiRequest($requestParse, 'parse'));
+        try {
+            $pageParse = new Data($this->wikisource->sendApiRequest($requestParse, 'parse'));
+        } catch (UsageException $ex) {
+            if ($ex->getMessage() === "The page you specified doesn't exist") {
+                // Page not found, elaborate on the reason.
+                $msg = "The top-level page for \"$this->pageTitleInitial\" does not exist";
+                throw new UsageException($ex->getApiCode(), $msg);
+            } else {
+                throw $ex;
+            }
+        }
         $this->wikisource->getWikisoureApi()->cacheSet($cacheKey, $pageParse);
         return $pageParse;
     }
