@@ -20,23 +20,23 @@ use Stash\Driver\FileSystem;
 $wsApi = new \Wikisource\Api\WikisourceApi();
 
 // Cache.
-$cache = new Pool(new FileSystem(['path' => __DIR__.'/cache']));
-$wsApi->setCache($cache);
+$cache = new Pool( new FileSystem( [ 'path' => __DIR__.'/cache' ] ) );
+$wsApi->setCache( $cache );
 
 // Logging.
-$logger = new Logger('WikisourceApi');
-$logger->pushHandler(new StreamHandler('php://stdout', Logger::DEBUG));
-$wsApi->setLogger($logger);
+$logger = new Logger( 'WikisourceApi' );
+$logger->pushHandler( new StreamHandler( 'php://stdout', Logger::DEBUG ) );
+$wsApi->setLogger( $logger );
 
-$wikisource = $wsApi->fetchWikisource('en');
-$work = $wikisource->getWork('Pride and Prejudice');
+$wikisource = $wsApi->fetchWikisource( 'en' );
+$work = $wikisource->getWork( 'Pride and Prejudice' );
 
 echo "\n'".$work->getWorkTitle()."'"
-     .' by '.join(', ', $work->getAuthors())
-     .' was published in '.$work->getYear()
-     .' by '.$work->getPublisher()
-     .' and is identified with '.$work->getWikidataItemNumber()."\n";
+	 .' by '.join( ', ', $work->getAuthors() )
+	 .' was published in '.$work->getYear()
+	 .' by '.$work->getPublisher()
+	 .' and is identified with '.$work->getWikidataItemNumber()."\n";
 
-foreach ($work->getIndexPages() as $indexPage) {
-    echo $indexPage->getTitle()."\n";
+foreach ( $work->getIndexPages() as $indexPage ) {
+	echo $indexPage->getTitle()."\n";
 }

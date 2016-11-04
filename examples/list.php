@@ -20,18 +20,18 @@ use Stash\Pool;
 $wsApi = new \Wikisource\Api\WikisourceApi();
 
 // Cache.
-$cache = new Pool(new FileSystem(['path' => __DIR__.'/cache']));
-$wsApi->setCache($cache);
+$cache = new Pool( new FileSystem( [ 'path' => __DIR__.'/cache' ] ) );
+$wsApi->setCache( $cache );
 
 // Logging.
-$logger = new Logger('WikisourceApi');
-$logger->pushHandler(new StreamHandler('php://stdout', Logger::DEBUG));
-$wsApi->setLogger($logger);
+$logger = new Logger( 'WikisourceApi' );
+$logger->pushHandler( new StreamHandler( 'php://stdout', Logger::DEBUG ) );
+$wsApi->setLogger( $logger );
 Eloquent\Asplode\Asplode::install();
 
 // The actual example.
 $wikisources = $wsApi->fetchWikisources();
-echo count($wikisources)." Wikisources found:\n";
-foreach ($wikisources as $ws) {
-    echo "* ".$ws->getLanguageCode()." - ".$ws->getLanguageName()."\n";
+echo count( $wikisources )." Wikisources found:\n";
+foreach ( $wikisources as $ws ) {
+	echo "* ".$ws->getLanguageCode()." - ".$ws->getLanguageName()."\n";
 }
