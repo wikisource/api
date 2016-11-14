@@ -7,8 +7,7 @@ where that's the only option.
 
 [![Build Status](https://travis-ci.org/wikisource/api.svg?branch=master)](https://travis-ci.org/wikisource/api)
 
-Features (some are in development and are not yet functional;
-please [lodge an issue](https://github.com/wikisource/api/issues) if one is important to you):
+Features (some are in development and are not yet functional):
 
 * List all Wikisources.
 * Get metadata about a single Wikisource: language code, language name (in that language), and information about
@@ -82,8 +81,8 @@ that implements [PSR-3's](http://www.php-fig.org/psr/psr-3/) `LoggerInterface`.
 
 ## Issues
 
-Please report all issues via [Phabricator](https://phabricator.wikimedia.org/maniphest/task/create/?projects=Wikisource)
-(tag them with the 'Wikisource' project, and append `[wikisource/api]` to the title).
+Please report all issues via Phabricator (tag them with the
+['wikisource-api' project](https://phabricator.wikimedia.org/project/view/2349/)).
 
 ## Licence
 
