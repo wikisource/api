@@ -178,14 +178,15 @@ class Work
 	}
 
 	/**
-	 * Get the Work's title (which may differ from the page's title)
-	 * @return string|boolean The title, or false if it could not be found.
+	 * Get the Work's title (which may differ from the page's title). This will attempt to extract
+	 * the title from the page microformats; if it fails to do so it will use the page title
+	 * instead.
+	 * @return string|boolean The title (which may actually just be the page title).
 	 */
 	public function getWorkTitle() {
-
 		$microformatData = $this->getMicroformatData();
 		if ( !isset( $microformatData['ws-title'] ) ) {
-			return false;
+			return $this->getPageTitle();
 		}
 		$this->workTitle = $microformatData['ws-title'];
 		return $this->workTitle;

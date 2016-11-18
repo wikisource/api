@@ -24,12 +24,14 @@ $cache = new Pool( new FileSystem( [ 'path' => __DIR__.'/cache' ] ) );
 $wsApi->setCache( $cache );
 
 // Logging.
+/*
 $logger = new Logger( 'WikisourceApi' );
 $logger->pushHandler( new StreamHandler( 'php://stdout', Logger::DEBUG ) );
 $wsApi->setLogger( $logger );
+/**/
 
 $wikisource = $wsApi->fetchWikisource( 'en' );
-$work = $wikisource->getWork( 'Pride and Prejudice' );
+$work = $wikisource->getWork( 'The Inn of Dreams' );
 
 echo "\n'".$work->getWorkTitle()."'"
 	 .' by '.join( ', ', $work->getAuthors() )
@@ -38,5 +40,5 @@ echo "\n'".$work->getWorkTitle()."'"
 	 .' and is identified with '.$work->getWikidataItemNumber()."\n";
 
 foreach ( $work->getIndexPages() as $indexPage ) {
-	echo $indexPage->getTitle()."\n";
+	echo '* ' . $indexPage->getTitle() . "\n  - " . $indexPage->getImage() . "\n";
 }

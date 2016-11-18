@@ -229,7 +229,6 @@ class IndexPage
 	 * a page could not be found with the given criteria.
 	 */
 	public function getChildPageInfo( $search, $key = 'num' ) {
-
 		$pageList = $this->getPageList();
 		foreach ( $pageList as $p ) {
 			if ( $p[$key] == $search ) {
@@ -246,11 +245,28 @@ class IndexPage
 	 * @return integer The quality rating.
 	 */
 	public function getQuality() {
-
+		// Starting at the lowest, see if we can find at least one page with the given quality.
 		for ( $q = 1; $q <= 4; $q++ ) {
 			$quals = $this->getHtmlCrawler()->filterXPath( "//a[contains(@class, 'prp-pagequality-$q')]" );
 			if ( $quals->count() > 0 ) {
+				// If we can, then this is the overall quality of the IndexPage.
 				return $q;
+			}
+		}
+	}
+
+	/**
+	 * Get the cover image of this IndexPage.
+	 * @return string URL of the JPEG image file on upload.wikimedia.org.
+	 */
+	public function getImage() {
+		$crawler = $this->getHtmlCrawler();
+		$imgs = $crawler->filterXPath( "//img" );
+		$coverRegex = '/\/\/upload\.wikimedia\.org\/(.*?)\.(djvu|pdf)\.jpg/';
+		foreach ( $imgs as $img ) {
+			preg_match( $coverRegex, $img->getAttribute( 'src' ), $matches );
+			if ( isset( $matches[0] ) ) {
+				return $matches[0];
 			}
 		}
 	}
