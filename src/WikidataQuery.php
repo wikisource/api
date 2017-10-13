@@ -12,8 +12,7 @@ use SimpleXMLElement;
 /**
  * Class WikidataQuery
  */
-class WikidataQuery
-{
+class WikidataQuery {
 
 	/** @var \Psr\Log\LoggerInterface The logger to use */
 	protected $logger;
@@ -26,7 +25,6 @@ class WikidataQuery
 	 * @param string $query The Sparql query to execute.
 	 */
 	public function __construct( $query ) {
-
 		$this->query = $query;
 	}
 
@@ -35,7 +33,6 @@ class WikidataQuery
 	 * @return string[] Array of results keyed by the names given in the Sparql query.
 	 */
 	public function fetch() {
-
 		$out = [];
 		$result = $this->getXml( $this->query );
 		foreach ( $result->results->result as $res ) {
@@ -50,7 +47,6 @@ class WikidataQuery
 	 * @return SimpleXMLElement
 	 */
 	protected function getXml( $query ) {
-
 		$url = "https://query.wikidata.org/bigdata/namespace/wdq/sparql?query=".urlencode( $query );
 		$client = new Client();
 		$response = $client->request( 'GET', $url );
@@ -63,7 +59,6 @@ class WikidataQuery
 	 * @return array
 	 */
 	protected function getBindings( SimpleXMLElement $xml ) {
-
 		$out = [];
 		foreach ( $xml->binding as $binding ) {
 			if ( isset( $binding->literal ) ) {

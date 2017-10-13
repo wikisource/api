@@ -14,8 +14,7 @@ use Psr\Log\NullLogger;
  * This class is the starting-point of the wikisource/api library, from which all other features
  * can be accessed.
  */
-class WikisourceApi
-{
+class WikisourceApi {
 
 	/** @var CacheItemPoolInterface The cache pool. */
 	protected $cachePool;
@@ -28,7 +27,6 @@ class WikisourceApi
 	 * something else via WikisourceApi::setLogger().
 	 */
 	public function __construct() {
-
 		$this->logger = new NullLogger();
 	}
 
@@ -41,7 +39,6 @@ class WikisourceApi
 	 * @return void
 	 */
 	public function setLogger( LoggerInterface $logger ) {
-
 		$this->logger = $logger;
 	}
 
@@ -51,7 +48,6 @@ class WikisourceApi
 	 * @return void
 	 */
 	public function setCache( CacheItemPoolInterface $pool ) {
-
 		$this->cachePool = $pool;
 	}
 
@@ -59,11 +55,10 @@ class WikisourceApi
 	 * Cache a value (if caching is in use; otherwise do nothing).
 	 * @param string $key The cache item's key (i.e. a unique name for it).
 	 * @param mixed $value A value supported by the cache system.
-	 * @param integer|\DateInterval $lifetime The lifetime of the cached item.
+	 * @param int|\DateInterval $lifetime The lifetime of the cached item.
 	 * @return void
 	 */
 	public function cacheSet( $key, $value, $lifetime = 3600 ) {
-
 		if ( $this->cachePool !== null ) {
 			$this->logger->debug( "Caching $key for ".number_format( $lifetime / 60 )." minutes" );
 			$cacheItem = $this->cachePool->getItem( $key )
@@ -79,10 +74,9 @@ class WikisourceApi
 	 * This is no good for cached items that are strictly equal to false.
 	 *
 	 * @param string $key The cache key.
-	 * @return mixed|boolean Either the cached data, or false if no data was found.
+	 * @return mixed|bool Either the cached data, or false if no data was found.
 	 */
 	public function cacheGet( $key ) {
-
 		if ( $this->cachePool === null ) {
 			return false;
 		}
@@ -100,11 +94,10 @@ class WikisourceApi
 	/**
 	 * Get a list of all Wikisources
 	 *
-	 * @param integer $cacheLifetime The life of the cache (if one's in use).
+	 * @param int $cacheLifetime The life of the cache (if one's in use).
 	 * @return Wikisource[]
 	 */
 	public function fetchWikisources( $cacheLifetime = null ) {
-
 		$data = $this->cacheGet( 'wikisources' );
 		if ( $data === false ) {
 			$this->logger->debug( "Requesting list of Wikisources from Wikidata" );
@@ -143,7 +136,6 @@ class WikisourceApi
 	 * @throws WikisourceApiException If the requested Wikisource doesn't exist.
 	 */
 	public function fetchWikisource( $langCode ) {
-
 		foreach ( $this->fetchWikisources() as $ws ) {
 			if ( $ws->getLanguageCode() === $langCode ) {
 				return $ws;
@@ -155,11 +147,10 @@ class WikisourceApi
 	/**
 	 * Get a Wikisource from a given URL.
 	 * @param string $url The Wikisource URL, with any path (or none).
-	 * @return Wikisource|boolean The Wikisource requested, or false if the URL isn't a Wikisource
+	 * @return Wikisource|bool The Wikisource requested, or false if the URL isn't a Wikisource
 	 * URL (i.e. xxx.wikisource.org).
 	 */
 	public function newWikisourceFromUrl( $url ) {
-
 		preg_match( '|//([a-z]{2,3}).wikisource.org|i', $url, $matches );
 		if ( !isset( $matches[1] ) ) {
 			$this->logger->debug( "Unable to find Wikisource URL in: $url" );

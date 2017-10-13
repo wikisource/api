@@ -14,8 +14,7 @@ use Psr\Log\LoggerInterface;
 /**
  * A Wikisource represents a single (one-language) Wikisource site.
  */
-class Wikisource
-{
+class Wikisource {
 
 	/** The canonical name of the 'Index' namespace. */
 	const NS_NAME_INDEX = 'Index';
@@ -38,7 +37,6 @@ class Wikisource
 	 * @param LoggerInterface $logger A logger interface to be used for logging.
 	 */
 	public function __construct( WikisourceApi $wikisourceApi, LoggerInterface $logger ) {
-
 		$this->api = $wikisourceApi;
 		$this->logger = $logger;
 	}
@@ -48,7 +46,6 @@ class Wikisource
 	 * @return WikisourceApi
 	 */
 	public function getWikisoureApi() {
-
 		return $this->api;
 	}
 
@@ -58,7 +55,6 @@ class Wikisource
 	 * @return void
 	 */
 	public function setLanguageCode( $code ) {
-
 		$this->langCode = $code;
 	}
 
@@ -67,7 +63,6 @@ class Wikisource
 	 * @return string The language code.
 	 */
 	public function getLanguageCode() {
-
 		return $this->langCode;
 	}
 
@@ -77,7 +72,6 @@ class Wikisource
 	 * @return void
 	 */
 	public function setLanguageName( $name ) {
-
 		$this->langName = $name;
 	}
 
@@ -86,7 +80,6 @@ class Wikisource
 	 * @return string The language name.
 	 */
 	public function getLanguageName() {
-
 		return $this->langName;
 	}
 
@@ -96,7 +89,6 @@ class Wikisource
 	 * @return Work
 	 */
 	public function getWork( $pageName ) {
-
 		return new Work( $this, $pageName, $this->logger );
 	}
 
@@ -106,7 +98,6 @@ class Wikisource
 	 * @return IndexPage
 	 */
 	public function getIndexPageFromUrl( $url ) {
-
 		$indexPage = new IndexPage( $this, $this->logger );
 		$indexPage->loadFromUrl( $url );
 		return $indexPage;
@@ -120,10 +111,9 @@ class Wikisource
 	 * extension installed, and so requests for Index and Page namespaces will not always work.
 	 *
 	 * @param string $namespaceName The canonical name of the namespace.
-	 * @return integer The namespace ID, or false if it can't be found.
+	 * @return int The namespace ID, or false if it can't be found.
 	 */
 	public function getNamespaceId( $namespaceName ) {
-
 		$cacheKey = 'namespaces'.$this->getLanguageCode();
 		$namespaces = $this->getWikisoureApi()->cacheGet( $cacheKey );
 		if ( $namespaces !== false ) {
@@ -150,7 +140,6 @@ class Wikisource
 	 * @return MediawikiApi
 	 */
 	public function getMediawikiApi() {
-
 		$api = new MediawikiApi( "https://$this->langCode.wikisource.org/w/api.php" );
 		return $api;
 	}
@@ -163,7 +152,6 @@ class Wikisource
 	 * @return array
 	 */
 	public function sendApiRequest( FluentRequest $request, $resultKey ) {
-
 		$data = [];
 		$continue = true;
 		do {

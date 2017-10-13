@@ -12,7 +12,6 @@ use Exception;
  * A WikisourceApiException is a general Exception that will be thrown for exceptional
  * circumstances in this library
  */
-class WikisourceApiException extends Exception
-{
+class WikisourceApiException extends Exception {
 
 }

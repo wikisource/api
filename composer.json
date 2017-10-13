@@ -14,15 +14,15 @@
         }
     },
     "require": {
-        "psr/cache": "1.*",
-        "psr/log": "1.*",
+        "psr/cache": "^1.0",
+        "psr/log": "^1.0",
         "dflydev/dot-access-data": "^1.0",
         "addwiki/mediawiki-api": "dev-master",
         "symfony/dom-crawler": "^3.1"
     },
     "require-dev": {
         "jakub-onderka/php-parallel-lint": "^0.9",
-        "mediawiki/mediawiki-codesniffer": "^0.7.2",
+        "mediawiki/mediawiki-codesniffer": "^13.0",
         "phpunit/phpunit": "^5.6",
         "phpdocumentor/phpdocumentor": "^2.9",
         "tedivm/stash": "dev-master",

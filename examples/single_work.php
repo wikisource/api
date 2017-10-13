@@ -7,28 +7,20 @@
  * @package WikisourceApi
  */
 
-/**
- * Composer autoloading
- */
 require __DIR__.'/../vendor/autoload.php';
-
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
-use Stash\Pool;
-use Stash\Driver\FileSystem;
 
 $wsApi = new \Wikisource\Api\WikisourceApi();
 
 // Cache.
-$cache = new Pool( new FileSystem( [ 'path' => __DIR__.'/cache' ] ) );
+$cache = new Stash\Pool( new Stash\Driver\FileSystem( [ 'path' => __DIR__.'/cache' ] ) );
 $wsApi->setCache( $cache );
 
 // Logging.
 /*
-$logger = new Logger( 'WikisourceApi' );
-$logger->pushHandler( new StreamHandler( 'php://stdout', Logger::DEBUG ) );
+$logger = new Monolog\Logger( 'WikisourceApi' );
+$logger->pushHandler( new Monolog\Handler\StreamHandler( 'php://stdout', Logger::DEBUG ) );
 $wsApi->setLogger( $logger );
-/**/
+*/
 
 $wikisource = $wsApi->fetchWikisource( 'en' );
 $work = $wikisource->getWork( 'The Inn of Dreams' );

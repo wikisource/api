@@ -20,8 +20,7 @@ use Symfony\Component\DomCrawler\Crawler;
  * and a series of subpages (one for each chapter, for example). A work (and its subpages) will
  * often be derived from a set of one or more Index Pages.
  */
-class Work
-{
+class Work {
 	/** @var Wikisource The Wikisource on which this Work is hosted */
 	protected $wikisource;
 
@@ -57,7 +56,6 @@ class Work
 	 * @param LoggerInterface $logger The logger instance.
 	 */
 	public function __construct( Wikisource $wikisource, $pageTitle, LoggerInterface $logger ) {
-
 		$this->wikisource = $wikisource;
 		$this->logger = $logger;
 		// If this is a subpage, determine the main-page. This is just a temporary thing until
@@ -75,7 +73,6 @@ class Work
 	 * @return Wikisource
 	 */
 	public function getWikisource() {
-
 		return $this->wikisource;
 	}
 
@@ -84,7 +81,6 @@ class Work
 	 * @return string
 	 */
 	public function getPageTitle() {
-
 		if ( $this->pageTitle !== null ) {
 			return $this->pageTitle;
 		}
@@ -100,7 +96,6 @@ class Work
 	 * @throws UsageException If the page doesn't exist, or something else goes wrong.
 	 */
 	protected function fetchPageParse( $title ) {
-
 		$cacheKey = 'work.' . $title;
 		$cacheItem = $this->wikisource->getWikisoureApi()->cacheGet( $cacheKey );
 		if ( $cacheItem !== false ) {
@@ -132,7 +127,6 @@ class Work
 	 * @return string The Wikidata item number with leading 'Q'.
 	 */
 	public function getWikidataItemNumber() {
-
 		$cacheKey = 'work.wikidataitem.' . $this->pageTitle;
 		$cacheItem = $this->wikisource->getWikisoureApi()->cacheGet( $cacheKey );
 		if ( $cacheItem !== false ) {
@@ -159,7 +153,6 @@ class Work
 	 * @return string[] An array of values, keyed by the microformat identifier (e.g. 'ws-title').
 	 */
 	public function getMicroformatData() {
-
 		if ( is_array( $this->microformatData ) ) {
 			return $this->microformatData;
 		}
@@ -181,7 +174,7 @@ class Work
 	 * Get the Work's title (which may differ from the page's title). This will attempt to extract
 	 * the title from the page microformats; if it fails to do so it will use the page title
 	 * instead.
-	 * @return string|boolean The title (which may actually just be the page title).
+	 * @return string|bool The title (which may actually just be the page title).
 	 */
 	public function getWorkTitle() {
 		$microformatData = $this->getMicroformatData();
@@ -194,10 +187,9 @@ class Work
 
 	/**
 	 * Get the name of the Work's publisher.
-	 * @return string|boolean The publisher, or false if it could not be found.
+	 * @return string|bool The publisher, or false if it could not be found.
 	 */
 	public function getPublisher() {
-
 		$microformatData = $this->getMicroformatData();
 		if ( !isset( $microformatData['ws-publisher'] ) ) {
 			return false;
@@ -207,10 +199,9 @@ class Work
 
 	/**
 	 * Get the Work's Author's names.
-	 * @return array|boolean An array of Author names, or false if none could be found.
+	 * @return array|bool An array of Author names, or false if none could be found.
 	 */
 	public function getAuthors() {
-
 		$microformatData = $this->getMicroformatData();
 		if ( !isset( $microformatData['ws-author'] ) ) {
 			return false;
@@ -225,11 +216,10 @@ class Work
 
 	/**
 	 * Get the Work's categories.
-	 * @param boolean $excludeHidden Whether to exclude hidden categories.
+	 * @param bool $excludeHidden Whether to exclude hidden categories.
 	 * @return string[] The Work's categories.
 	 */
 	public function getCategories( $excludeHidden = true ) {
-
 		$pageParse = $this->fetchPageParse( $this->getPageTitle() );
 		$categories = [];
 		foreach ( $pageParse->get( 'categories' ) as $cat ) {
@@ -243,10 +233,9 @@ class Work
 
 	/**
 	 * Get the year of publication.
-	 * @return boolean|string The year, or false if it can't be determined.
+	 * @return bool|string The year, or false if it can't be determined.
 	 */
 	public function getYear() {
-
 		$microformatData = $this->getMicroformatData();
 		if ( !isset( $microformatData['ws-year'] ) ) {
 			return false;
@@ -259,7 +248,6 @@ class Work
 	 * @return IndexPage[] An array of Index pages.
 	 */
 	public function getIndexPages() {
-
 		$indexPages = [];
 
 		// First of all, find all subpages of this Work.
@@ -272,7 +260,7 @@ class Work
 			$subpageTitle = $subpage->getPageIdentifier()->getTitle();
 			$subpageParse = $this->fetchPageParse( $subpageTitle->getText() );
 			foreach ( $subpageParse->get( 'templates' ) as $tpl ) {
-				$tplNsId = (int) $tpl['ns'];
+				$tplNsId = (int)$tpl['ns'];
 				$title = $tpl['*'];
 				$isIndex = $tplNsId === $this->wikisource->getNamespaceId( Wikisource::NS_NAME_INDEX );
 				$alreadyFound = array_key_exists( $title, $indexPages );

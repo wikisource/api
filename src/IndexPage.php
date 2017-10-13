@@ -15,8 +15,7 @@ use Symfony\Component\DomCrawler\Crawler;
 /**
  * An IndexPage is at the core of the proofreading process for a Work on Wikisource
  */
-class IndexPage
-{
+class IndexPage {
 
 	/** @var string[] The metadata of this page: 'pageid', 'ns', 'title', 'canonicalurl', etc. */
 	protected $pageInfo;
@@ -41,11 +40,10 @@ class IndexPage
 	 *
 	 * @param Wikisource $ws The Wikisource object on which this Index page resides.
 	 * @param LoggerInterface $logger A logger interface.
-	 * @param integer|\DateInterval $cacheLifetime The time interval for which to cache the page's
+	 * @param int|\DateInterval $cacheLifetime The time interval for which to cache the page's
 	 * metadata.
 	 */
 	public function __construct( Wikisource $ws, LoggerInterface $logger, $cacheLifetime = 3600 ) {
-
 		$this->wikisource = $ws;
 		$this->logger = $logger;
 		$this->cacheLifetime = $cacheLifetime;
@@ -56,7 +54,6 @@ class IndexPage
 	 * @return Wikisource
 	 */
 	public function getWikisource() {
-
 		return $this->wikisource;
 	}
 
@@ -65,10 +62,9 @@ class IndexPage
 	 *
 	 * If it hasn't, you need to call one of the load* methods.
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	public function loaded() {
-
 		return isset( $this->pageInfo['pageid'] );
 	}
 
@@ -78,7 +74,6 @@ class IndexPage
 	 * @return void
 	 */
 	public function loadFromTitle( $title ) {
-
 		$url = 'https://'.$this->wikisource->getLanguageCode().'.wikisource.org/wiki/'.$title;
 		$this->loadFromUrl( $url );
 	}
@@ -94,7 +89,6 @@ class IndexPage
 	 * @throws WikisourceApiException If the URL is not for an existing Index page.
 	 */
 	public function loadFromUrl( $url ) {
-
 		preg_match( "|wikisource.org/wiki/(.*)|i", $url, $matches );
 		if ( !isset( $matches[1] ) ) {
 			throw new WikisourceApiException( "Unable to find page title in: $url" );
@@ -112,7 +106,7 @@ class IndexPage
 		// Query to make sure the page title exists and is an Index page.
 		$req = new FluentRequest();
 		$req->setAction( 'query' );
-		$req->addParams( [ 'titles' => $title, 'prop'=>'info', 'inprop'=>'url' ] );
+		$req->addParams( [ 'titles' => $title, 'prop' => 'info', 'inprop' => 'url' ] );
 		$res = $this->wikisource->sendApiRequest( $req, 'query.pages' );
 		if ( !isset( $res[0] ) ) {
 			throw new WikisourceApiException( "Unable to load IndexPage from URL: $url" );
@@ -127,7 +121,7 @@ class IndexPage
 		}
 
 		$this->pageInfo = $indexPageInfo;
-		$this->wikisource->getWikisoureApi()->cacheSet( $cacheKey, $this->pageInfo, 24*60*60 );
+		$this->wikisource->getWikisoureApi()->cacheSet( $cacheKey, $this->pageInfo, 24 * 60 * 60 );
 	}
 
 	/**
@@ -136,7 +130,6 @@ class IndexPage
 	 * @throws WikisourceApiException If this is called before one of the load* methods.
 	 */
 	public function getUrl() {
-
 		if ( !isset( $this->pageInfo['canonicalurl'] ) ) {
 			throw new WikisourceApiException( "Index page is not loaded" );
 		}
@@ -149,7 +142,6 @@ class IndexPage
 	 * @throws WikisourceApiException If this is called before one of the load* methods.
 	 */
 	public function getTitle() {
-
 		if ( !isset( $this->pageInfo['title'] ) ) {
 			throw new WikisourceApiException( "Index page is not loaded" );
 		}
@@ -162,7 +154,6 @@ class IndexPage
 	 * @return Crawler
 	 */
 	protected function getHtmlCrawler() {
-
 		if ( !$this->pageCrawler instanceof Crawler ) {
 			$client = new Client();
 			$cacheKey = 'indexpagehtml'.md5( $this->getUrl() );
@@ -187,7 +178,6 @@ class IndexPage
 	 * @return string[] Array of arrays with keys 'num', 'label', 'status', 'url'.
 	 */
 	public function getPageList() {
-
 		preg_match( '/(.*wikisource.org)/', $this->pageInfo['canonicalurl'], $matches );
 		$baseUrl = isset( $matches[1] ) ? $matches[1] : false;
 
@@ -217,7 +207,7 @@ class IndexPage
 				'quality' => $quality,
 				'title' => $pageTitle,
 			];
-		}// end foreach
+		}
 		return $pagelist;
 	}
 
@@ -225,7 +215,7 @@ class IndexPage
 	 * Get information about a particular child page.
 	 * @param string $search The info to search for.
 	 * @param string $key The key to search by (see return info params).
-	 * @return string[]|boolean Info: 'label', 'num', 'url', 'quality', and 'title', or false if
+	 * @return string[]|bool Info: 'label', 'num', 'url', 'quality', and 'title', or false if
 	 * a page could not be found with the given criteria.
 	 */
 	public function getChildPageInfo( $search, $key = 'num' ) {
@@ -242,7 +232,7 @@ class IndexPage
 	 * The quality of an Index page is taken to be the quality of its lowest
 	 * quality page (excluding quality 0, which means "without text").
 	 * @link https://en.wikisource.org/wiki/Help:Page_status
-	 * @return integer The quality rating.
+	 * @return int The quality rating.
 	 */
 	public function getQuality() {
 		// Starting at the lowest, see if we can find at least one page with the given quality.
