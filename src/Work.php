@@ -127,22 +127,23 @@ class Work {
 	 * @return string The Wikidata item number with leading 'Q'.
 	 */
 	public function getWikidataItemNumber() {
-		$cacheKey = 'work.wikidataitem.' . $this->pageTitle;
+		$pageTitle = $this->getPageTitle();
+		$cacheKey = 'work.wikidataitem.' . $pageTitle;
 		$cacheItem = $this->wikisource->getWikisoureApi()->cacheGet( $cacheKey );
 		if ( $cacheItem !== false ) {
-			$this->logger->debug( "Using cached Wikidata number for $this->pageTitle" );
+			$this->logger->debug( "Using cached Wikidata number for $pageTitle" );
 			return $cacheItem;
 		}
 		// Get the Wikidata Item.
 		$requestProps = FluentRequest::factory()
 				->setAction( 'query' )
-				->setParam( 'titles', $this->pageTitle )
+				->setParam( 'titles', $pageTitle )
 				->setParam( 'prop', 'pageprops' )
 				->setParam( 'ppprop', 'wikibase_item' );
 		$pageProps = $this->wikisource->sendApiRequest( $requestProps, 'query.pages' );
 		$pagePropsSingle = new Data( array_shift( $pageProps ) );
 		$wdItemNum = $pagePropsSingle->get( 'pageprops.wikibase_item' );
-		$this->logger->debug( "Caching Wikidata number for $this->pageTitle" );
+		$this->logger->debug( "Caching Wikidata number for $pageTitle" );
 		$this->wikisource->getWikisoureApi()->cacheSet( $cacheKey, $wdItemNum, 24 * 60 * 60 );
 		return $wdItemNum;
 	}

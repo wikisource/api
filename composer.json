@@ -3,6 +3,11 @@
     "description": "A PHP API to Wikisources (all languages).",
     "type": "library",
     "license": "GPL-2.0+",
+    "support": {
+        "irc": "irc://irc.freenode.org/wikisource",
+        "issues": "https://phabricator.wikimedia.org/tag/wikisource-api/",
+        "source": "https://github.com/wikisource/api.git"
+    },
     "autoload": {
         "psr-4": {
             "Wikisource\\Api\\": "src/"
