@@ -25,12 +25,18 @@ $wsApi->setLogger( $logger );
 $wikisource = $wsApi->fetchWikisource( 'en' );
 $work = $wikisource->getWork( 'The Inn of Dreams' );
 
-echo "\n'".$work->getWorkTitle()."'"
-	 .' by '.join( ', ', $work->getAuthors() )
-	 .' was published in '.$work->getYear()
-	 .' by '.$work->getPublisher()
-	 .' and is identified with '.$work->getWikidataItemNumber()."\n";
+echo "\n'" . $work->getWorkTitle() . "'"
+	. ' by ' . join( ', ', $work->getAuthors() )
+	. ' was published in ' . $work->getYear()
+	. ' by ' . $work->getPublisher()
+	. ' and is identified with ' . $work->getWikidataItemNumber() . "\n";
 
+echo "\nSubpages:\n";
+foreach ( $work->getSubpages() as $subpageNum => $subpage ) {
+	echo sprintf( "%3d. %s\n", $subpageNum + 1, $subpage );
+}
+
+echo "\nIndex pages:\n";
 foreach ( $work->getIndexPages() as $indexPage ) {
 	echo '* ' . $indexPage->getTitle() . "\n  - " . $indexPage->getImage() . "\n";
 }
