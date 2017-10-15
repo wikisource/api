@@ -157,10 +157,7 @@ class Work {
 		if ( is_array( $this->microformatData ) ) {
 			return $this->microformatData;
 		}
-		// Note the slightly odd way of ensuring the HTML content is loaded as UTF8.
-		$pageHtml = $this->fetchPageParse( $this->getPageTitle() )->get( 'text.*' );
-		$pageCrawler = new Crawler();
-		$pageCrawler->addHtmlContent( "<div>$pageHtml</div>", 'UTF-8' );
+		$pageCrawler = $this->getHtmlCrawler( $this->getPageTitle() );
 		// Pull the microformatted-defined attributes.
 		$microformatIds = [ 'ws-title', 'ws-author', 'ws-year', 'ws-publisher', 'ws-place' ];
 		$this->microformatData = [];
@@ -274,5 +271,56 @@ class Work {
 			}
 		}
 		return $indexPages;
+	}
+
+	/**
+	 * Get a DOM crawler for the parsed page HTML.
+	 * @param string $title The page title.
+	 * @return Crawler
+	 */
+	protected function getHtmlCrawler( $title ) {
+		$pageHtml = $this->fetchPageParse( $title )->get( 'text.*' );
+		$pageCrawler = new Crawler();
+		// Note the slightly odd way of ensuring the HTML content is loaded as UTF8.
+		$pageCrawler->addHtmlContent( "<div>$pageHtml</div>", 'UTF-8' );
+		return $pageCrawler;
+	}
+
+	/**
+	 * Get all of this work's subpages, in the order in which they appear in the work.
+	 * @return string[]
+	 */
+	public function getSubpages() {
+		return $this->getSubpagesData( $this->getPageTitle() );
+	}
+
+	/**
+	 * Internal recursive method for getting the names of subpages of this Work.
+	 * @param string $title The highest-level page under which to get subpages.
+	 * @param string[] &$visited Pages to ignore when recursing into subpages' links.
+	 * @return array
+	 */
+	protected function getSubpagesData( $title, &$visited = [] ) {
+		$subpages = [];
+		$pageCrawler = $this->getHtmlCrawler( $title );
+		$links = $pageCrawler->filterXPath( '//a' );
+		$baseHref = '/wiki/' . str_replace( ' ', '_', $title );
+		foreach ( $links as $link ) {
+			$href = $link->getAttribute( 'href' );
+			if ( substr( $href, 0, strlen( $baseHref ) ) !== $baseHref ) {
+				continue;
+			}
+			$pageTitle = substr( urldecode( $href ), strlen( '/wiki/' ) );
+			if ( !in_array( $pageTitle, $visited ) ) {
+				$visited[] = $pageTitle;
+				// Recurse to get the subpages linked from this subpage.
+				$subpages = array_merge(
+					$subpages,
+					[ $pageTitle ],
+					$this->getSubpagesData( $pageTitle, $visited )
+				);
+			}
+		}
+		return $subpages;
 	}
 }
