@@ -316,7 +316,7 @@ class Work {
 		$links = $pageCrawler->filterXPath( '//a' );
 		$baseHref = '/wiki/' . str_replace( ' ', '_', $title );
 		foreach ( $links as $link ) {
-			$href = $link->getAttribute( 'href' );
+			$href = urldecode( $link->getAttribute( 'href' ) );
 			if ( substr( $href, 0, strlen( $baseHref ) ) !== $baseHref ) {
 				continue;
 			}
