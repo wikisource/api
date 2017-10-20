@@ -288,19 +288,28 @@ class Work {
 
 	/**
 	 * Get all of this work's subpages, in the order in which they appear in the work.
+	 *
+	 * Some works have many thousands of subpages, so in many situations its not feasible (or
+	 * desired) to scan them all. If you want just their names and don't care about ordering,
+	 * there are better ways than this.
+	 *
+	 * @param int $limit Give up after finding this many subpages.
+	 * reasonable number.
+	 *
 	 * @return string[]
 	 */
-	public function getSubpages() {
-		return $this->getSubpagesData( $this->getPageTitle() );
+	public function getSubpages( $limit = 100 ) {
+		return $this->getSubpagesData( $this->getPageTitle(), $limit );
 	}
 
 	/**
 	 * Internal recursive method for getting the names of subpages of this Work.
 	 * @param string $title The highest-level page under which to get subpages.
+	 * @param int $limit Give up after finding this many subpages.
 	 * @param string[] &$visited Pages to ignore when recursing into subpages' links.
 	 * @return array
 	 */
-	protected function getSubpagesData( $title, &$visited = [] ) {
+	protected function getSubpagesData( $title, $limit, &$visited = [] ) {
 		$subpages = [];
 		$pageCrawler = $this->getHtmlCrawler( $title );
 		$links = $pageCrawler->filterXPath( '//a' );
@@ -311,15 +320,25 @@ class Work {
 				continue;
 			}
 			$pageTitle = substr( urldecode( $href ), strlen( '/wiki/' ) );
-			if ( !in_array( $pageTitle, $visited ) ) {
-				$visited[] = $pageTitle;
-				// Recurse to get the subpages linked from this subpage.
-				$subpages = array_merge(
-					$subpages,
-					[ $pageTitle ],
-					$this->getSubpagesData( $pageTitle, $visited )
-				);
+			if ( in_array( $pageTitle, $visited ) ) {
+				// Go to the next page if we've already visited this one.
+				continue;
 			}
+			// Record that we've scanned this page.
+			$visited[] = $pageTitle;
+			$subpages = array_merge(
+				$subpages,
+				[ $pageTitle ]
+			);
+			// Return what we've got so far if we're at the limit.
+			if ( count( $subpages ) >= $limit ) {
+				return $subpages;
+			}
+			// Recurse to get the subpages linked from this subpage.
+			$subpages = array_merge(
+				$subpages,
+				$this->getSubpagesData( $pageTitle, $visited )
+			);
 		}
 		return $subpages;
 	}
