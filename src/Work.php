@@ -310,6 +310,7 @@ class Work {
 	 * @return array
 	 */
 	protected function getSubpagesData( $title, $limit, &$visited = [] ) {
+		$this->logger->debug( "Getting subpages of $title" );
 		$subpages = [];
 		$pageCrawler = $this->getHtmlCrawler( $title );
 		$links = $pageCrawler->filterXPath( '//a' );
@@ -332,6 +333,7 @@ class Work {
 			);
 			// Return what we've got so far if we're at the limit.
 			if ( count( $subpages ) >= $limit ) {
+				$this->logger->debug( "Reached limit of $limit subpages after adding $pageTitle" );
 				return $subpages;
 			}
 			// Recurse to get the subpages linked from this subpage.

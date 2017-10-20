@@ -18,7 +18,7 @@ $wsApi->setCache( $cache );
 // Logging.
 /*
 $logger = new Monolog\Logger( 'WikisourceApi' );
-$logger->pushHandler( new Monolog\Handler\StreamHandler( 'php://stdout', Logger::DEBUG ) );
+$logger->pushHandler( new Monolog\Handler\StreamHandler( 'php://stdout', Monolog\Logger::DEBUG ) );
 $wsApi->setLogger( $logger );
 */
 
