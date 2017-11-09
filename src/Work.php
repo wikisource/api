@@ -318,7 +318,7 @@ class Work {
 		foreach ( $links as $link ) {
 			$href = urldecode( $link->getAttribute( 'href' ) );
 			// Ignore redirects.
-			if ($link->getAttribute('class') == 'mw-redirect') {
+			if ( $link->getAttribute( 'class' ) == 'mw-redirect' ) {
 				$this->logger->debug( "Ignoring redirect to $href" );
 				continue;
 			}
