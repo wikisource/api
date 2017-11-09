@@ -317,12 +317,18 @@ class Work {
 		$baseHref = '/wiki/' . str_replace( ' ', '_', $title );
 		foreach ( $links as $link ) {
 			$href = urldecode( $link->getAttribute( 'href' ) );
+			// Ignore redirects.
+			if ($link->getAttribute('class') == 'mw-redirect') {
+				$this->logger->debug( "Ignoring redirect to $href" );
+				continue;
+			}
+			// Ignore if doesn't start with our base URL.
 			if ( substr( $href, 0, strlen( $baseHref ) ) !== $baseHref ) {
 				continue;
 			}
 			$pageTitle = substr( urldecode( $href ), strlen( '/wiki/' ) );
+			// Go to the next page if we've already visited this one.
 			if ( in_array( $pageTitle, $visited ) ) {
-				// Go to the next page if we've already visited this one.
 				continue;
 			}
 			// Record that we've scanned this page.
@@ -339,7 +345,7 @@ class Work {
 			// Recurse to get the subpages linked from this subpage.
 			$subpages = array_merge(
 				$subpages,
-				$this->getSubpagesData( $pageTitle, $visited )
+				$this->getSubpagesData( $pageTitle, $limit, $visited )
 			);
 		}
 		return $subpages;
