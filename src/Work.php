@@ -79,8 +79,8 @@ class Work {
 	/**
 	 * Get the wiki page title of the top-level page of this Work.
 	 * @param bool $normalize Whether to send a request for the normalized title. If false, the
-	 * title as provided to the constructor will be returned (sans subpages). If the title has 
-	 * previously been normalized it will be returned normalized (without submitting another 
+	 * title as provided to the constructor will be returned (sans subpages). If the title has
+	 * previously been normalized it will be returned normalized (without submitting another
 	 * request though).
 	 * @return string
 	 */
