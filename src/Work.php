@@ -77,12 +77,19 @@ class Work {
 	}
 
 	/**
-	 * Get the normalised wiki page title of the top-level page of this Work
+	 * Get the wiki page title of the top-level page of this Work.
+	 * @param bool $normalize Whether to send a request for the normalized title. If false, the
+	 * title as provided to the constructor will be returned (sans subpages). If the title has 
+	 * previously been normalized it will be returned normalized (without submitting another 
+	 * request though).
 	 * @return string
 	 */
-	public function getPageTitle() {
+	public function getPageTitle( $normalize = true ) {
 		if ( $this->pageTitle !== null ) {
 			return $this->pageTitle;
+		}
+		if ( !$normalize ) {
+			return $this->pageTitleInitial;
 		}
 		$parse = $this->fetchPageParse( $this->pageTitleInitial );
 		$this->pageTitle = $parse->get( 'title' );
