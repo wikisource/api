@@ -333,7 +333,12 @@ class Work {
 			if ( substr( $href, 0, strlen( $baseHref ) ) !== $baseHref ) {
 				continue;
 			}
+			// Drop the wiki prefix and the fragment.
 			$pageTitle = substr( urldecode( $href ), strlen( '/wiki/' ) );
+			$fragmentPos = strrpos( $pageTitle, '#' );
+			if ( $fragmentPos !== false ) {
+				$pageTitle = substr( $pageTitle, 0, $fragmentPos );
+			}
 			// Go to the next page if we've already visited this one.
 			if ( in_array( $pageTitle, $visited ) ) {
 				continue;
