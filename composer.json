@@ -30,7 +30,7 @@
         "mediawiki/mediawiki-codesniffer": "^13.0",
         "phpunit/phpunit": "^5.6",
         "phpdocumentor/phpdocumentor": "^2.9",
-        "tedivm/stash": "dev-master",
+        "tedivm/stash": "^0.14",
         "monolog/monolog": "^1.21",
         "eloquent/asplode": "^2.2"
     }
