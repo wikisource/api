@@ -194,7 +194,7 @@ class IndexPage {
 			$anchorPageNum = isset( $matches[0] ) ? $matches[1] : false;
 
 			// Get page title (extract from URL).
-			preg_match( '/title=(.*\/\d+)/', $anchorHref, $matches );
+			preg_match( '|/wiki/(.*)|', $anchorHref, $matches );
 			$pageTitle = isset( $matches[0] ) ? $matches[1] : false;
 
 			// Get quality.
