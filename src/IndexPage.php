@@ -10,6 +10,7 @@ namespace Wikisource\Api;
 use GuzzleHttp\Client;
 use Mediawiki\Api\FluentRequest;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
@@ -43,9 +44,11 @@ class IndexPage {
 	 * @param int|\DateInterval $cacheLifetime The time interval for which to cache the page's
 	 * metadata.
 	 */
-	public function __construct( Wikisource $ws, LoggerInterface $logger, $cacheLifetime = 3600 ) {
+	public function __construct(
+		Wikisource $ws, LoggerInterface $logger = null, $cacheLifetime = 3600
+	) {
 		$this->wikisource = $ws;
-		$this->logger = $logger;
+		$this->logger = $logger ?: new NullLogger();
 		$this->cacheLifetime = $cacheLifetime;
 	}
 
@@ -74,7 +77,7 @@ class IndexPage {
 	 * @return void
 	 */
 	public function loadFromTitle( $title ) {
-		$url = 'https://'.$this->wikisource->getLanguageCode().'.wikisource.org/wiki/'.$title;
+		$url = 'https://'.$this->wikisource->getDomainName().'/wiki/'.$title;
 		$this->loadFromUrl( $url );
 	}
 

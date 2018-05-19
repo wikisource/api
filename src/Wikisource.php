@@ -10,6 +10,7 @@ use Dflydev\DotAccessData\Data;
 use Mediawiki\Api\FluentRequest;
 use Mediawiki\Api\MediawikiApi;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 /**
  * A Wikisource represents a single (one-language) Wikisource site.
@@ -36,9 +37,9 @@ class Wikisource {
 	 * @param WikisourceApi $wikisourceApi The WikisourceApi that this Wikisource is attached to.
 	 * @param LoggerInterface $logger A logger interface to be used for logging.
 	 */
-	public function __construct( WikisourceApi $wikisourceApi, LoggerInterface $logger ) {
+	public function __construct( WikisourceApi $wikisourceApi, LoggerInterface $logger = null ) {
 		$this->api = $wikisourceApi;
-		$this->logger = $logger;
+		$this->logger = $logger ?: new NullLogger();
 	}
 
 	/**
@@ -81,6 +82,17 @@ class Wikisource {
 	 */
 	public function getLanguageName() {
 		return $this->langName;
+	}
+
+	/**
+	 * Get the domain name of this Wikisource.
+	 * @return string
+	 */
+	public function getDomainName() {
+		if ( $this->getLanguageCode() ) {
+			return $this->getLanguageCode().'.wikisource.org';
+		}
+		return 'wikisource.org';
 	}
 
 	/**
@@ -140,7 +152,7 @@ class Wikisource {
 	 * @return MediawikiApi
 	 */
 	public function getMediawikiApi() {
-		$api = new MediawikiApi( "https://$this->langCode.wikisource.org/w/api.php" );
+		$api = new MediawikiApi( 'https://'.$this->getDomainName() . '/w/api.php' );
 		return $api;
 	}
 
