@@ -178,15 +178,51 @@ class IndexPage {
 	 * Get a list of all pages: their numbers, labels, statuses, and URLs. Currently doing this in a
 	 * pretty clunky way that probably makes quite a few assumptions based on English Wikisource.
 	 * This method sends a request to Wikisource.
+	 *
+	 * @param bool $onlyExisting Only return info about pages that exist. This does not return the
+	 * pages' label (it is set to the page number).
 	 * @return string[] Array of arrays with keys 'num', 'label', 'status', 'url'.
 	 */
-	public function getPageList() {
+	public function getPageList( $onlyExisting = false ) {
+		$pagelist = [];
+
+		// Use the API to get a list of all existing pages.
+		if ( $onlyExisting ) {
+			$req = new FluentRequest();
+			$req->setAction( 'query' );
+			$indexNsLocalName = $this->wikisource
+				->getNamespaceLocalName( Wikisource::NS_NAME_INDEX );
+			$title = substr( $this->getTitle(), strlen( $indexNsLocalName ) + 1 );
+			$ns = $this->wikisource->getNamespaceId( Wikisource::NS_NAME_PAGE );
+			$reqParams = [
+				'prop' => 'proofread',
+				'generator' => 'prefixsearch',
+				'gpssearch' => $title,
+				'gpsnamespace' => $ns,
+				'gpslimit' => 500,
+			];
+			$req->addParams( $reqParams );
+			$res = $this->wikisource->sendApiRequest( $req, 'query.pages' );
+			foreach ( $res as $page ) {
+				$subpage = substr( $page['title'], strrpos( $page['title'], '/' ) + 1 );
+				// @TODO The label can not currently be retrieved from the API.
+				$pagelist['page-'.$subpage] = [
+					'label' => $subpage,
+					'num' => $subpage,
+					'url' => 'https://'.$this->getWikisource()->getDomainName().'/wiki/'.$page['title'],
+					'quality' => $page['proofread']['quality'],
+					'title' => $page['title'],
+				];
+			}
+			return $pagelist;
+		}
+
+		// If we need non-existing pages as well, we have to scrape the HTML. :-(
 		preg_match( '/(.*wikisource.org)/', $this->pageInfo['canonicalurl'], $matches );
 		$baseUrl = isset( $matches[1] ) ? $matches[1] : false;
 
 		$pageCrawler = $this->getHtmlCrawler();
 		$pagelistAnchors = $pageCrawler->filterXPath( "//div[contains(@class, 'index-pagelist')]//a" );
-		$pagelist = [];
 		foreach ( $pagelistAnchors as $pageLink ) {
 			// Get page URL (which is relative, starting with /w/index.php) and page number.
 			$anchorHref = $pageLink->getAttribute( 'href' );

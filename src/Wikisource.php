@@ -20,6 +20,9 @@ class Wikisource {
 	/** The canonical name of the 'Index' namespace. */
 	const NS_NAME_INDEX = 'Index';
 
+	/** The canonical name of the 'Page' namespace. */
+	const NS_NAME_PAGE = 'Page';
+
 	/** @var WikisourceApi The parent API object. */
 	protected $api;
 
@@ -126,6 +129,38 @@ class Wikisource {
 	 * @return int The namespace ID, or false if it can't be found.
 	 */
 	public function getNamespaceId( $namespaceName ) {
+		foreach ( $this->getNamespaces() as $ns ) {
+			if ( isset( $ns['canonical'] ) && $ns['canonical'] === $namespaceName ) {
+				return $ns['id'];
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Get the local name for a single namespace.
+	 *
+	 * @param string $namespaceName The name of the namespace to get.
+	 * @return string
+	 */
+	public function getNamespaceLocalName( $namespaceName ) {
+		if ( $namespaceName === '' ) {
+			return '';
+		}
+		$namespaces = $this->getNamespaces();
+		foreach ( $namespaces as $ns ) {
+			if ( isset( $ns['canonical'] ) && $ns['canonical'] === $namespaceName && isset( $ns['*'] ) ) {
+				return $ns['*'];
+			}
+		}
+	}
+
+	/**
+	 * Get information about the namespaces on this Wikisource.
+	 *
+	 * @return array
+	 */
+	public function getNamespaces() {
 		$cacheKey = 'namespaces'.$this->getLanguageCode();
 		$namespaces = $this->getWikisoureApi()->cacheGet( $cacheKey );
 		if ( $namespaces !== false ) {
@@ -133,18 +168,13 @@ class Wikisource {
 		} else {
 			$this->logger->debug( "Requesting namespace data for ".$this->getLanguageCode() );
 			$request = FluentRequest::factory()
-					->setAction( 'query' )
-					->setParam( 'meta', 'siteinfo' )
-					->setParam( 'siprop', 'namespaces' );
+				->setAction( 'query' )
+				->setParam( 'meta', 'siteinfo' )
+				->setParam( 'siprop', 'namespaces' );
 			$namespaces = $this->sendApiRequest( $request, 'query.namespaces' );
 			$this->getWikisoureApi()->cacheSet( $cacheKey, $namespaces );
 		}
-		foreach ( $namespaces as $ns ) {
-			if ( isset( $ns['canonical'] ) && $ns['canonical'] === $namespaceName ) {
-				return $ns['id'];
-			}
-		}
-		return false;
+		return $namespaces;
 	}
 
 	/**

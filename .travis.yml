@@ -1,15 +1,10 @@
 language: php
 
 php:
-  - 5.6
-  - 7.0
-  - 7.1
+  - 7.2
 
 install:
   - composer install
 
 script:
-  - vendor/bin/phpcs -s
-  - vendor/bin/parallel-lint . --exclude vendor
-  - vendor/bin/phpdoc -q --template=checkstyle
-  - (! grep -B 1 error docs/api/checkstyle.xml)
+  - composer test
