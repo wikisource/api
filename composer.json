@@ -2,7 +2,7 @@
     "name": "wikisource/api",
     "description": "A PHP API to Wikisources (all languages).",
     "type": "library",
-    "license": "GPL-2.0+",
+    "license": "GPL-2.0-or-later",
     "support": {
         "irc": "irc://irc.freenode.org/wikisource",
         "issues": "https://phabricator.wikimedia.org/tag/wikisource-api/",
@@ -19,19 +19,28 @@
         }
     },
     "require": {
+        "ext-json": "*",
+        "ext-simplexml": "*",
         "psr/cache": "^1.0",
         "psr/log": "^1.0",
         "dflydev/dot-access-data": "^1.0",
         "addwiki/mediawiki-api": "^0.7",
-        "symfony/dom-crawler": "^3.1"
+        "symfony/dom-crawler": "^4.2"
     },
     "require-dev": {
+        "mediawiki/minus-x": "^0.3",
         "jakub-onderka/php-parallel-lint": "^0.9",
         "mediawiki/mediawiki-codesniffer": "^13.0",
-        "phpunit/phpunit": "^5.6",
-        "phpdocumentor/phpdocumentor": "^2.9",
         "tedivm/stash": "^0.14",
         "monolog/monolog": "^1.21",
         "eloquent/asplode": "^2.2"
+    },
+    "scripts": {
+        "test": [
+            "composer validate",
+            "parallel-lint . --exclude vendor",
+            "minus-x check .",
+            "phpcs -s"
+        ]
     }
 }
