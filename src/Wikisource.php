@@ -32,7 +32,10 @@ class Wikisource {
 	/** @var string The name of the language of this Wikisource, in that language. */
 	protected $langName;
 
-	/** @var \Psr\Log\LoggerInterface The logger to use */
+	/** @var array Runtime cache of namespace information. */
+	protected $namespaces;
+
+	/** @var LoggerInterface The logger to use */
 	protected $logger;
 
 	/**
@@ -99,12 +102,13 @@ class Wikisource {
 	}
 
 	/**
-	 * Get a single work from this Wikisource.
-	 * @param string $pageName The page name to retrieve.
-	 * @return Work
+	 * Get a single edition from this Wikisource.
+	 * @param string $pageName The top-level page name to retrieve, with or without underscores. If
+	 * a subpage is provided, the top-level will be extracted and used.
+	 * @return Edition
 	 */
-	public function getWork( $pageName ) {
-		return new Work( $this, $pageName, $this->logger );
+	public function getEdition( $pageName ) {
+		return new Edition( $this, $pageName, $this->logger );
 	}
 
 	/**
@@ -161,6 +165,9 @@ class Wikisource {
 	 * @return array
 	 */
 	public function getNamespaces() {
+		if ( $this->namespaces ) {
+			return $this->namespaces;
+		}
 		$cacheKey = 'namespaces' . $this->getLanguageCode();
 		$namespaces = $this->getWikisoureApi()->cacheGet( $cacheKey );
 		if ( $namespaces !== false ) {
@@ -174,7 +181,8 @@ class Wikisource {
 			$namespaces = $this->sendApiRequest( $request, 'query.namespaces' );
 			$this->getWikisoureApi()->cacheSet( $cacheKey, $namespaces );
 		}
-		return $namespaces;
+		$this->namespaces = $namespaces;
+		return $this->namespaces;
 	}
 
 	/**

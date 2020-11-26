@@ -6,6 +6,8 @@
 
 namespace Wikisource\Api;
 
+use Mediawiki\Api\MediawikiApi;
+use Mediawiki\Api\SimpleRequest;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -160,5 +162,28 @@ class WikisourceApi {
 		$ws = new Wikisource( $this, $this->logger );
 		$ws->setLanguageCode( $langCode );
 		return $ws;
+	}
+
+	/**
+	 * Get data about a Wikidata entity.
+	 * @param string $id The Wikidata ID.
+	 * @return bool|mixed
+	 */
+	public function getWikdataEntity( $id ) {
+		$cacheKey = 'wikisourceapi.wikidataentity.' . $id;
+		$cacheItem = $this->cacheGet( $cacheKey );
+		if ( $cacheItem !== false ) {
+			$this->logger->debug( "Using cached data for Wikidata item $id" );
+			return $cacheItem;
+		}
+		$wdApi = new MediawikiApi( 'https://www.wikidata.org/w/api.php' );
+		$metadataRequest = new SimpleRequest( 'wbgetentities', [ 'ids' => $id ] );
+		$itemResult = $wdApi->getRequest( $metadataRequest );
+		if ( !isset( $itemResult['success'] ) || !isset( $itemResult['entities'][$id] ) ) {
+			return false;
+		}
+		$entityData = $itemResult['entities'][ $id ];
+		$this->cacheSet( $cacheKey, $entityData );
+		return $entityData;
 	}
 }

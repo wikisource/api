@@ -23,20 +23,26 @@ $wsApi->setLogger( $logger );
 */
 
 $wikisource = $wsApi->fetchWikisource( 'en' );
-$work = $wikisource->getWork( 'The Inn of Dreams' );
+$edition = $wikisource->getEdition( 'The Inn of Dreams' );
 
-echo "\n'" . $work->getWorkTitle() . "'"
-	. ' by ' . implode( ', ', $work->getAuthors() )
-	. ' was published in ' . $work->getYear()
-	. ' by ' . $work->getPublisher()
-	. ' and is identified with ' . $work->getWikidataItemNumber() . "\n";
+echo "\n'" . $edition->getTitle() . "'"
+	. ' by ' . implode( ', ', $edition->getAuthors() )
+	. ' was published in ' . $edition->getYear()
+	. ' by ' . $edition->getPublisher()
+	. ' and is identified with ' . $edition->getWikidataItemNumber() . "\n"
+	. 'It is an edition of ' . $edition->getWork()->getWikidataId()
+	. ", which also has these other editions:\n";
+foreach ( $edition->getWork()->getEditions() as $edition ) {
+	echo "* " . $edition->getTitle()
+		. " (" . $edition->getYear() . ", " . $edition->getWikisource()->getLanguageCode() . ")\n";
+}
 
 echo "\nSubpages:\n";
-foreach ( $work->getSubpages() as $subpageNum => $subpage ) {
+foreach ( $edition->getSubpages() as $subpageNum => $subpage ) {
 	echo sprintf( "%3d. %s\n", $subpageNum + 1, $subpage );
 }
 
 echo "\nIndex pages:\n";
-foreach ( $work->getIndexPages() as $indexPage ) {
+foreach ( $edition->getIndexPages() as $indexPage ) {
 	echo '* ' . $indexPage->getTitle() . "\n  - " . $indexPage->getImage() . "\n";
 }
