@@ -30,7 +30,7 @@ class IndexPage {
 	/** @var \Psr\Log\LoggerInterface The logger to use */
 	protected $logger;
 
-	/** @var \DateInterval|integer The time to keep the cached Index page metadata for. */
+	/** @var \DateInterval|int The time to keep the cached Index page metadata for. */
 	protected $cacheLifetime;
 
 	/**
@@ -40,7 +40,7 @@ class IndexPage {
 	 * retrieve the data from the Wikisource.
 	 *
 	 * @param Wikisource $ws The Wikisource object on which this Index page resides.
-	 * @param LoggerInterface $logger A logger interface.
+	 * @param LoggerInterface|null $logger A logger interface.
 	 * @param int|\DateInterval $cacheLifetime The time interval for which to cache the page's
 	 * metadata.
 	 */
@@ -77,7 +77,7 @@ class IndexPage {
 	 * @return void
 	 */
 	public function loadFromTitle( $title ) {
-		$url = 'https://'.$this->wikisource->getDomainName().'/wiki/'.$title;
+		$url = 'https://' . $this->wikisource->getDomainName() . '/wiki/' . $title;
 		$this->loadFromUrl( $url );
 	}
 
@@ -98,7 +98,7 @@ class IndexPage {
 		}
 		$title = $matches[1];
 
-		$cacheKey = 'indexpage'.md5( $url );
+		$cacheKey = 'indexpage' . md5( $url );
 		$pageInfo = $this->wikisource->getWikisoureApi()->cacheGet( $cacheKey );
 		if ( $pageInfo !== false ) {
 			$this->logger->info( "Using cached page info for $url" );
@@ -116,7 +116,7 @@ class IndexPage {
 		}
 		$indexPageInfo = $res[0];
 		if ( !isset( $indexPageInfo['ns'] ) ) {
-			$msg = "Unable to find NS in: ".print_r( $indexPageInfo, true );
+			$msg = "Unable to find NS in: " . print_r( $indexPageInfo, true );
 			throw new WikisourceApiException( $msg );
 		}
 		if ( $indexPageInfo['ns'] != $this->wikisource->getNamespaceId( Wikisource::NS_NAME_INDEX ) ) {
@@ -159,14 +159,14 @@ class IndexPage {
 	protected function getHtmlCrawler() {
 		if ( !$this->pageCrawler instanceof Crawler ) {
 			$client = new Client();
-			$cacheKey = 'indexpagehtml'.md5( $this->getUrl() );
+			$cacheKey = 'indexpagehtml' . md5( $this->getUrl() );
 			$pageHtml = $this->wikisource->getWikisoureApi()->cacheGet( $cacheKey );
 			if ( $pageHtml === false ) {
 				$indexPage = $client->request( 'GET', $this->getUrl() );
 				$pageHtml = $indexPage->getBody()->getContents();
 				$this->wikisource->getWikisoureApi()->cacheSet( $cacheKey, $pageHtml, $this->cacheLifetime );
 			} else {
-				$this->logger->info( "Using cached HTML for index page ".$this->getTitle() );
+				$this->logger->info( "Using cached HTML for index page " . $this->getTitle() );
 			}
 			$this->pageCrawler = new Crawler;
 			$this->pageCrawler->addHTMLContent( $pageHtml, 'UTF-8' );
@@ -206,10 +206,10 @@ class IndexPage {
 			foreach ( $res as $page ) {
 				$subpage = substr( $page['title'], strrpos( $page['title'], '/' ) + 1 );
 				// @TODO The label can not currently be retrieved from the API.
-				$pagelist['page-'.$subpage] = [
+				$pagelist['page-' . $subpage] = [
 					'label' => $subpage,
 					'num' => $subpage,
-					'url' => 'https://'.$this->getWikisource()->getDomainName().'/wiki/'.$page['title'],
+					'url' => 'https://' . $this->getWikisource()->getDomainName() . '/wiki/' . $page['title'],
 					'quality' => $page['proofread']['quality'],
 					'title' => $page['title'],
 				];
@@ -243,10 +243,10 @@ class IndexPage {
 			$quality = isset( $matches[0] ) ? $matches[1] : false;
 
 			// Save for later.
-			$pagelist['page-'.$anchorPageNum] = [
+			$pagelist['page-' . $anchorPageNum] = [
 				'label' => $pageLink->nodeValue,
 				'num' => $anchorPageNum,
-				'url' => $baseUrl.$anchorHref,
+				'url' => $baseUrl . $anchorHref,
 				'quality' => $quality,
 				'title' => $pageTitle,
 			];

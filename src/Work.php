@@ -269,7 +269,7 @@ class Work {
 				$title = $tpl['*'];
 				$isIndex = $tplNsId === $this->wikisource->getNamespaceId( Wikisource::NS_NAME_INDEX );
 				$alreadyFound = array_key_exists( $title, $indexPages );
-				if ( $isIndex && ! $alreadyFound ) {
+				if ( $isIndex && !$alreadyFound ) {
 					$this->logger->debug( "Linking an index page: $title" );
 					$indexPage = new IndexPage( $this->wikisource, $this->logger );
 					$indexPage->loadFromTitle( $title );
