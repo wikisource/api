@@ -18,10 +18,10 @@ use Psr\Log\NullLogger;
 class Wikisource {
 
 	/** The canonical name of the 'Index' namespace. */
-	const NS_NAME_INDEX = 'Index';
+	public const NS_NAME_INDEX = 'Index';
 
 	/** The canonical name of the 'Page' namespace. */
-	const NS_NAME_PAGE = 'Page';
+	public const NS_NAME_PAGE = 'Page';
 
 	/** @var WikisourceApi The parent API object. */
 	protected $api;
@@ -38,7 +38,7 @@ class Wikisource {
 	/**
 	 * Wikisource constructor
 	 * @param WikisourceApi $wikisourceApi The WikisourceApi that this Wikisource is attached to.
-	 * @param LoggerInterface $logger A logger interface to be used for logging.
+	 * @param LoggerInterface|null $logger A logger interface to be used for logging.
 	 */
 	public function __construct( WikisourceApi $wikisourceApi, LoggerInterface $logger = null ) {
 		$this->api = $wikisourceApi;
@@ -93,7 +93,7 @@ class Wikisource {
 	 */
 	public function getDomainName() {
 		if ( $this->getLanguageCode() ) {
-			return $this->getLanguageCode().'.wikisource.org';
+			return $this->getLanguageCode() . '.wikisource.org';
 		}
 		return 'wikisource.org';
 	}
@@ -161,12 +161,12 @@ class Wikisource {
 	 * @return array
 	 */
 	public function getNamespaces() {
-		$cacheKey = 'namespaces'.$this->getLanguageCode();
+		$cacheKey = 'namespaces' . $this->getLanguageCode();
 		$namespaces = $this->getWikisoureApi()->cacheGet( $cacheKey );
 		if ( $namespaces !== false ) {
-			$this->logger->debug( "Using cached namespace data for ".$this->getLanguageCode() );
+			$this->logger->debug( "Using cached namespace data for " . $this->getLanguageCode() );
 		} else {
-			$this->logger->debug( "Requesting namespace data for ".$this->getLanguageCode() );
+			$this->logger->debug( "Requesting namespace data for " . $this->getLanguageCode() );
 			$request = FluentRequest::factory()
 				->setAction( 'query' )
 				->setParam( 'meta', 'siteinfo' )
@@ -182,7 +182,7 @@ class Wikisource {
 	 * @return MediawikiApi
 	 */
 	public function getMediawikiApi() {
-		$api = new MediawikiApi( 'https://'.$this->getDomainName() . '/w/api.php' );
+		$api = new MediawikiApi( 'https://' . $this->getDomainName() . '/w/api.php' );
 		return $api;
 	}
 
@@ -198,7 +198,7 @@ class Wikisource {
 		$continue = true;
 		do {
 			// Send request and save data for later returning.
-			$this->logger->debug( "API request: ".json_encode( $request->getParams() ) );
+			$this->logger->debug( "API request: " . json_encode( $request->getParams() ) );
 			$result = new Data( $this->getMediawikiApi()->getRequest( $request ) );
 			$resultingData = $result->get( $resultKey );
 			if ( !is_array( $resultingData ) ) {

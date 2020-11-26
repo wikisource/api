@@ -29,11 +29,11 @@
     },
     "require-dev": {
         "mediawiki/minus-x": "^0.3",
-        "jakub-onderka/php-parallel-lint": "^0.9",
-        "mediawiki/mediawiki-codesniffer": "^13.0",
+        "php-parallel-lint/php-parallel-lint": "^1.2",
+        "mediawiki/mediawiki-codesniffer": "^v33.0",
         "tedivm/stash": "^0.14",
         "monolog/monolog": "^1.21",
-        "eloquent/asplode": "^2.2"
+        "symfony/var-dumper": "^5.1"
     },
     "scripts": {
         "test": [

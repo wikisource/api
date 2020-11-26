@@ -18,7 +18,7 @@ use Stash\Pool;
 $wsApi = new \Wikisource\Api\WikisourceApi();
 
 // Cache.
-$cache = new Pool( new FileSystem( [ 'path' => __DIR__.'/cache' ] ) );
+$cache = new Pool( new FileSystem( [ 'path' => __DIR__ . '/cache' ] ) );
 $wsApi->setCache( $cache );
 
 // Logging.
@@ -35,5 +35,5 @@ $pageList = $prideAndPrejudiceIndex->getPageList();
 
 // Output summary.
 echo $prideAndPrejudiceIndex->getTitle()
-	 ." has ".count( $pageList ) . " pages "
-	 ."and is of quality '".$prideAndPrejudiceIndex->getQuality()."'\n";
+	 . " has " . count( $pageList ) . " pages "
+	 . "and is of quality '" . $prideAndPrejudiceIndex->getQuality() . "'\n";

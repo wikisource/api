@@ -6,8 +6,8 @@
 
 namespace Wikisource\Api;
 
-use Psr\Log\LoggerInterface;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 /**
@@ -60,7 +60,7 @@ class WikisourceApi {
 	 */
 	public function cacheSet( $key, $value, $lifetime = 3600 ) {
 		if ( $this->cachePool !== null ) {
-			$this->logger->debug( "Caching $key for ".number_format( $lifetime / 60 )." minutes" );
+			$this->logger->debug( "Caching $key for " . number_format( $lifetime / 60 ) . " minutes" );
 			$cacheItem = $this->cachePool->getItem( $key )
 				->set( $value )
 				->expiresAfter( $lifetime );
@@ -94,7 +94,7 @@ class WikisourceApi {
 	/**
 	 * Get a list of all Wikisources
 	 *
-	 * @param int $cacheLifetime The life of the cache (if one's in use).
+	 * @param int|null $cacheLifetime The life of the cache (if one's in use).
 	 * @return Wikisource[]
 	 */
 	public function fetchWikisources( $cacheLifetime = null ) {

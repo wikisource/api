@@ -5,7 +5,7 @@ This is an client API library for retrieving data from [Wikisources](https://wik
 It uses data from Wikidata where it can, or MediaWiki API data from specific Wikisources, or resorts to scraping HTML
 where that's the only option.
 
-[![Build Status](https://travis-ci.org/wikisource/api.svg?branch=master)](https://travis-ci.org/wikisource/api)
+![CI](https://github.com/wikisource/api/workflows/CI/badge.svg)
 
 Features (some are in development and are not yet functional):
 

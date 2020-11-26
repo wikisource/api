@@ -47,7 +47,7 @@ class WikidataQuery {
 	 * @return SimpleXMLElement
 	 */
 	protected function getXml( $query ) {
-		$url = "https://query.wikidata.org/bigdata/namespace/wdq/sparql?query=".urlencode( $query );
+		$url = "https://query.wikidata.org/bigdata/namespace/wdq/sparql?query=" . urlencode( $query );
 		$client = new Client();
 		$response = $client->request( 'GET', $url );
 		return new SimpleXMLElement( $response->getBody()->getContents() );

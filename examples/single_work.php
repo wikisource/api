@@ -7,12 +7,12 @@
  * @package WikisourceApi
  */
 
-require __DIR__.'/../vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
 $wsApi = new \Wikisource\Api\WikisourceApi();
 
 // Cache.
-$cache = new Stash\Pool( new Stash\Driver\FileSystem( [ 'path' => __DIR__.'/cache' ] ) );
+$cache = new Stash\Pool( new Stash\Driver\FileSystem( [ 'path' => __DIR__ . '/cache' ] ) );
 $wsApi->setCache( $cache );
 
 // Logging.
@@ -26,7 +26,7 @@ $wikisource = $wsApi->fetchWikisource( 'en' );
 $work = $wikisource->getWork( 'The Inn of Dreams' );
 
 echo "\n'" . $work->getWorkTitle() . "'"
-	. ' by ' . join( ', ', $work->getAuthors() )
+	. ' by ' . implode( ', ', $work->getAuthors() )
 	. ' was published in ' . $work->getYear()
 	. ' by ' . $work->getPublisher()
 	. ' and is identified with ' . $work->getWikidataItemNumber() . "\n";
