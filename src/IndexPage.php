@@ -200,6 +200,7 @@ class IndexPage {
 				'gpssearch' => $title,
 				'gpsnamespace' => $ns,
 				'gpslimit' => 500,
+				'redirects' => true,
 			];
 			$req->addParams( $reqParams );
 			$res = $this->wikisource->sendApiRequest( $req, 'query.pages' );

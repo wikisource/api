@@ -31,9 +31,9 @@ $enWs = $wsApi->newWikisourceFromUrl( "https://en.wikisource.org/wiki/Any_page" 
 $prideAndPrejudiceIndex = $enWs->getIndexPageFromUrl(
 	"https://en.wikisource.org/wiki/Index:Austen_-_Pride_and_Prejudice,_third_edition,_1817.djvu"
 );
-$pageList = $prideAndPrejudiceIndex->getPageList();
+$pagesCount = count( $prideAndPrejudiceIndex->getPageList() );
+$existing = count( $prideAndPrejudiceIndex->getPageList( true ) );
 
 // Output summary.
-echo $prideAndPrejudiceIndex->getTitle()
-	 . " has " . count( $pageList ) . " pages "
-	 . "and is of quality '" . $prideAndPrejudiceIndex->getQuality() . "'\n";
+echo $prideAndPrejudiceIndex->getTitle() . " has $pagesCount pages ($existing of which exist) "
+	 . "and is of quality '" . $prideAndPrejudiceIndex->getQuality() . "'.\n";
