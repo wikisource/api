@@ -104,7 +104,7 @@ class WikisourceApi {
 		if ( $data === false ) {
 			$this->logger->debug( "Requesting list of Wikisources from Wikidata" );
 			$query =
-				"SELECT ?langCode ?langName WHERE { "
+				"SELECT ?item ?langCode ?langName WHERE { "
 				// Instance of Wikisource language edition.
 				. "?item wdt:P31 wd:Q15156455 . "
 				// Wikimedia language code.
@@ -118,7 +118,7 @@ class WikisourceApi {
 			if ( !is_numeric( $cacheLifetime ) ) {
 				$cacheLifetime = 60 * 60 * 24 * 30;
 			}
-			$this->logger->debug( "Caching list of Wikisoruces for $cacheLifetime" );
+			$this->logger->debug( "Caching list of Wikisources for $cacheLifetime" );
 			$this->cacheSet( 'wikisources', $data, $cacheLifetime );
 		}
 		$wikisources = [];
@@ -126,6 +126,7 @@ class WikisourceApi {
 			$ws = new Wikisource( $this, $this->logger );
 			$ws->setLanguageCode( $langInfo['langCode'] );
 			$ws->setLanguageName( $langInfo['langName'] );
+			$ws->setWikidataId( substr( $langInfo['item'], strlen( 'http://www.wikidata.org/entity/' ) ) );
 			$wikisources[] = $ws;
 		}
 		return $wikisources;

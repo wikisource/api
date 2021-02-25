@@ -17,6 +17,12 @@ use Psr\Log\NullLogger;
  */
 class Wikisource {
 
+	/** Wikidata property ID: logo image */
+	public const PROP_LOGO = 'P154';
+
+	/** Wikidata property ID: official website */
+	public const PROP_WEBSITE = 'P856';
+
 	/** The canonical name of the 'Index' namespace. */
 	public const NS_NAME_INDEX = 'Index';
 
@@ -25,6 +31,9 @@ class Wikisource {
 
 	/** @var WikisourceApi The parent API object. */
 	protected $api;
+
+	/** @var string */
+	protected $wikidataId;
 
 	/** @var string The language code of this Wikisource. */
 	protected $langCode;
@@ -95,10 +104,38 @@ class Wikisource {
 	 * @return string
 	 */
 	public function getDomainName() {
-		if ( $this->getLanguageCode() ) {
-			return $this->getLanguageCode() . '.wikisource.org';
+		$entity = $this->getWikisoureApi()->getWikdataEntity( $this->getWikidataId() );
+		return isset( $entity['claims'][self::PROP_WEBSITE] )
+			? $entity['claims'][self::PROP_WEBSITE][0]['mainsnak']['datavalue']['value']
+			: null;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getWikidataId(): string {
+		if ( !$this->wikidataId ) {
+			$this->getWikisoureApi()->fetchWikisource( $this->getLanguageCode() );
 		}
-		return 'wikisource.org';
+		return $this->wikidataId;
+	}
+
+	/**
+	 * @param string $wikidataId
+	 */
+	public function setWikidataId( string $wikidataId ): void {
+		$this->wikidataId = $wikidataId;
+	}
+
+	/**
+	 * Get the Commons filename (without 'File:' prefix) of this Wikisource's logo.
+	 * @return string|null
+	 */
+	public function getLogoFilename(): ?string {
+		$entity = $this->getWikisoureApi()->getWikdataEntity( $this->getWikidataId() );
+		return isset( $entity['claims'][self::PROP_LOGO] )
+			? $entity['claims'][self::PROP_LOGO][0]['mainsnak']['datavalue']['value']
+			: null;
 	}
 
 	/**
