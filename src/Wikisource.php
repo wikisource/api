@@ -103,11 +103,17 @@ class Wikisource {
 	 * Get the domain name of this Wikisource.
 	 * @return string
 	 */
-	public function getDomainName() {
+	public function getDomainName(): string {
 		$entity = $this->getWikisoureApi()->getWikdataEntity( $this->getWikidataId() );
-		return isset( $entity['claims'][self::PROP_WEBSITE] )
-			? $entity['claims'][self::PROP_WEBSITE][0]['mainsnak']['datavalue']['value']
-			: null;
+		if ( isset( $entity['claims'][self::PROP_WEBSITE] ) ) {
+			$website = $entity['claims'][self::PROP_WEBSITE][0]['mainsnak']['datavalue']['value'];
+			$urlParts = parse_url( $website );
+			return $urlParts['host'];
+		}
+		if ( $this->getLanguageCode() ) {
+			return $this->getLanguageCode() . '.wikisource.org';
+		}
+		return 'wikisource.org';
 	}
 
 	/**
