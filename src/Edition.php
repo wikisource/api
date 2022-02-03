@@ -123,7 +123,7 @@ class Edition {
 	 * @throws UsageException If the page doesn't exist, or something else goes wrong.
 	 */
 	protected function fetchPageParse( $title ) {
-		$cacheKey = 'edition.' . $title;
+		$cacheKey = 'edition.' . md5( $title );
 		$cacheItem = $this->wikisource->getWikisoureApi()->cacheGet( $cacheKey );
 		if ( $cacheItem !== false ) {
 			$this->logger->debug( "Using cached page parse data for $title" );
