@@ -32,5 +32,5 @@ $wsApi->setLogger( $logger );
 $wikisources = $wsApi->fetchWikisources();
 echo count( $wikisources ) . " Wikisources found:\n";
 foreach ( $wikisources as $ws ) {
-	echo "* " . $ws->getLanguageCode() . " - " . $ws->getLanguageName() . "\n";
+	echo "* " . $ws->getLanguageCode() . " - " . $ws->getLanguageName() . " - " . $ws->getWikidataId() . "\n";
 }

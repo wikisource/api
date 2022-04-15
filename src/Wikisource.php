@@ -121,7 +121,10 @@ class Wikisource {
 	 */
 	public function getWikidataId(): string {
 		if ( !$this->wikidataId ) {
-			$this->getWikisoureApi()->fetchWikisource( $this->getLanguageCode() );
+			// Get another Wikisource object, but via fetchWikisource() to ensure it has a Wikidata ID.
+			$this->wikidataId = $this->getWikisoureApi()
+				->fetchWikisource( $this->getLanguageCode() )
+				->getWikidataId();
 		}
 		return $this->wikidataId;
 	}

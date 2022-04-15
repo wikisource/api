@@ -35,5 +35,7 @@ $pagesCount = count( $prideAndPrejudiceIndex->getPageList() );
 $existing = count( $prideAndPrejudiceIndex->getPageList( true ) );
 
 // Output summary.
-echo $prideAndPrejudiceIndex->getTitle() . " has $pagesCount pages ($existing of which exist) "
-	 . "and is of quality '" . $prideAndPrejudiceIndex->getQuality() . "'.\n";
+echo $prideAndPrejudiceIndex->getTitle()
+	. " (on " . $enWs->getDomainName() . ", " . $enWs->getWikidataId() . ") "
+	. "has $pagesCount pages ($existing of which exist) "
+	. "and is of quality '" . $prideAndPrejudiceIndex->getQuality() . "'.\n";
