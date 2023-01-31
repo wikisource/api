@@ -254,6 +254,10 @@ class Wikisource {
 			// Send request and save data for later returning.
 			$this->logger->debug( "API request: " . json_encode( $request->getParams() ) );
 			$result = new Data( $this->getMediawikiApi()->getRequest( $request ) );
+			if ( !$result->has( $resultKey ) ) {
+				$continue = false;
+				continue;
+			}
 			$resultingData = $result->get( $resultKey );
 			if ( !is_array( $resultingData ) ) {
 				$continue = false;
