@@ -112,7 +112,7 @@ class WikisourceApi {
 				// Language of work or name.
 				. "?item wdt:P407 ?lang . "
 				// RDF label of the language, in the language.
-				. "?lang rdfs:label ?langName . FILTER(LANG(?langName) = ?langCode) . " . "}";
+				. "?lang rdfs:label ?langName . FILTER(LANG(?langName) = ?langCode || ?langCode = 'mul') . " . "}";
 			$wdQuery = new WikidataQuery( $query );
 			$data = $wdQuery->fetch();
 			if ( !is_numeric( $cacheLifetime ) ) {
@@ -151,15 +151,22 @@ class WikisourceApi {
 	 * Get a Wikisource from a given URL.
 	 * @param string $url The Wikisource URL, with any path (or none).
 	 * @return Wikisource|bool The Wikisource requested, or false if the URL isn't a Wikisource
-	 * URL (i.e. xxx.wikisource.org).
+	 * URL (i.e. xxx.wikisource.org or wikisource.org).
 	 */
 	public function newWikisourceFromUrl( $url ) {
-		preg_match( '|//([a-z]{2,3}).wikisource.org|i', $url, $matches );
+		// match wikisources with subdomain like xy.wikisource.org or xyz.wikisource.org
+		preg_match( '|//([a-z]{0,3})\.?wikisource.org|i', $url, $matches );
 		if ( !isset( $matches[1] ) ) {
 			$this->logger->debug( "Unable to find Wikisource URL in: $url" );
 			return false;
 		}
-		$langCode = $matches[1];
+		// if wikisource.org, then set $langCode as mul
+		// indicating mul.wikisource.org
+		if ( $matches[1] == "" ) {
+			$langCode = "mul";
+		} else {
+			$langCode = $matches[1];
+		}
 		$ws = new Wikisource( $this, $this->logger );
 		$ws->setLanguageCode( $langCode );
 		return $ws;
