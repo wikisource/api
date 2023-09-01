@@ -111,7 +111,7 @@ class Wikisource {
 			$urlParts = parse_url( $website );
 			return $urlParts['host'];
 		}
-		if ( $this->getLanguageCode() !== 'mul' && $this->getLanguageCode() ) {
+		if ( $this->getLanguageCode() && $this->getLanguageCode() !== 'mul' ) {
 			return $this->getLanguageCode() . '.wikisource.org';
 		}
 		return 'wikisource.org';
