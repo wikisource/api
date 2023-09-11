@@ -104,7 +104,7 @@ class WikisourceApi {
 		if ( $data === false ) {
 			$this->logger->debug( "Requesting list of Wikisources from Wikidata" );
 			$query =
-				"SELECT ?item ?langCode ?langName WHERE { "
+				"SELECT ?item ?langCode ?langName WHERE { {"
 				// Instance of Wikisource language edition.
 				. "?item wdt:P31 wd:Q15156455 . "
 				// Wikimedia language code.
@@ -112,7 +112,16 @@ class WikisourceApi {
 				// Language of work or name.
 				. "?item wdt:P407 ?lang . "
 				// RDF label of the language, in the language.
-				. "?lang rdfs:label ?langName . FILTER(LANG(?langName) = ?langCode || ?langCode = 'mul') . " . "}";
+				. "?lang rdfs:label ?langName . FILTER(LANG(?langName) = ?langCode) ."
+				// perform a union of the results
+				. " } UNION { "
+				// Instance of Wikisource language edition.
+				. "?item wdt:P31 wd:Q15156455 ."
+				// Wikimedia language code.
+				. "?item wdt:P424 ?langCode ."
+				// language of work or name is multiple languages
+				. "?item wdt:P407 wd:Q20923490 . } }";
+			echo $query;
 			$wdQuery = new WikidataQuery( $query );
 			$data = $wdQuery->fetch();
 			if ( !is_numeric( $cacheLifetime ) ) {
@@ -126,6 +135,9 @@ class WikisourceApi {
 			$ws = new Wikisource( $this, $this->logger );
 			$ws->setLanguageCode( $langInfo['langCode'] );
 			$ws->setLanguageName( $langInfo['langName'] );
+			if ( $langInfo['langCode'] == "mul" ) {
+				$ws->setLanguageName( "Multilingual Wikisource" );
+			}
 			$ws->setWikidataId( substr( $langInfo['item'], strlen( 'http://www.wikidata.org/entity/' ) ) );
 			$wikisources[] = $ws;
 		}
