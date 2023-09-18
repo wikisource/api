@@ -105,12 +105,13 @@ class Wikisource {
 	 */
 	public function getDomainName(): string {
 		$entity = $this->getWikisoureApi()->getWikdataEntity( $this->getWikidataId() );
-		if ( isset( $entity['claims'][self::PROP_WEBSITE] ) ) {
+		// if it is mul wikisource, return base url without subdomain
+		if ( $this->getLanguageCode() !== 'mul' && isset( $entity['claims'][self::PROP_WEBSITE] ) ) {
 			$website = $entity['claims'][self::PROP_WEBSITE][0]['mainsnak']['datavalue']['value'];
 			$urlParts = parse_url( $website );
 			return $urlParts['host'];
 		}
-		if ( $this->getLanguageCode() ) {
+		if ( $this->getLanguageCode() && $this->getLanguageCode() !== 'mul' ) {
 			return $this->getLanguageCode() . '.wikisource.org';
 		}
 		return 'wikisource.org';
