@@ -113,7 +113,8 @@ class WikisourceApi {
 				. "?item wdt:P407 ?lang . "
 				// RDF label of the language, in the language.
 				// filter for mul wikisource
-				. "?lang rdfs:label ?langName . FILTER(LANG(?langName) = ?langCode || ( ?langCode = 'mul' && LANG(?langName) = 'en' )) . " . "}";
+				. "?lang rdfs:label ?langName . FILTER(LANG(?langName) = ?langCode || "
+				. "( ?langCode = 'mul' && LANG(?langName) = 'en' )) . " . "}";
 			$wdQuery = new WikidataQuery( $query );
 			$data = $wdQuery->fetch();
 			if ( !is_numeric( $cacheLifetime ) ) {
