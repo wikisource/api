@@ -33,14 +33,16 @@
         "mediawiki/mediawiki-codesniffer": "^v39.0",
         "tedivm/stash": "^0.17",
         "monolog/monolog": "^1.21|^2.0",
-        "symfony/var-dumper": "^5.1"
+        "symfony/var-dumper": "^5.1",
+        "phpunit/phpunit": "^11.1"
     },
     "scripts": {
         "test": [
             "composer validate",
             "parallel-lint . --exclude vendor",
             "minus-x check .",
-            "phpcs -s"
+            "phpcs -s",
+            "phpunit"
         ]
     }
 }
