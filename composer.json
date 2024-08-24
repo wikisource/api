@@ -4,7 +4,6 @@
     "type": "library",
     "license": "GPL-2.0-or-later",
     "support": {
-        "irc": "irc://irc.freenode.org/wikisource",
         "issues": "https://phabricator.wikimedia.org/tag/wikisource-api/",
         "source": "https://github.com/wikisource/api.git"
     },
@@ -25,12 +24,12 @@
         "psr/log": "^1.0",
         "dflydev/dot-access-data": "^3.0",
         "addwiki/mediawiki-api": "^0.7",
-        "symfony/dom-crawler": "^4.2|^5.0"
+        "symfony/dom-crawler": "^4.2|^5.0|^6|^7"
     },
     "require-dev": {
         "mediawiki/minus-x": "^1.1",
         "php-parallel-lint/php-parallel-lint": "^1.2",
-        "mediawiki/mediawiki-codesniffer": "^v39.0",
+        "mediawiki/mediawiki-codesniffer": "^44.0",
         "tedivm/stash": "^0.17",
         "monolog/monolog": "^1.21|^2.0",
         "symfony/var-dumper": "^5.1"
@@ -42,5 +41,10 @@
             "minus-x check .",
             "phpcs -s"
         ]
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     }
 }
