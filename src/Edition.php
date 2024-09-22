@@ -6,10 +6,10 @@
 
 namespace Wikisource\Api;
 
+use Addwiki\Mediawiki\Api\Client\Action\Exception\UsageException;
+use Addwiki\Mediawiki\Api\Client\Action\Request\ActionRequest;
+use Addwiki\Mediawiki\Api\Service\PageListGetter;
 use Dflydev\DotAccessData\Data;
-use Mediawiki\Api\FluentRequest;
-use Mediawiki\Api\MediawikiFactory;
-use Mediawiki\Api\UsageException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -129,8 +129,7 @@ class Edition {
 			$this->logger->debug( "Using cached page parse data for $title" );
 			return $cacheItem;
 		}
-		$requestParse = FluentRequest::factory()
-				->setAction( 'parse' )
+		$requestParse = ActionRequest::simpleGet( 'parse' )
 				->setParam( 'page', $title )
 				->setParam( 'prop', 'text|templates|categories' );
 		try {
@@ -162,8 +161,7 @@ class Edition {
 			return $cacheItem;
 		}
 		// Get the Wikidata Item.
-		$requestProps = FluentRequest::factory()
-				->setAction( 'query' )
+		$requestProps = ActionRequest::simpleGet( 'query' )
 				->setParam( 'titles', $pageTitle )
 				->setParam( 'prop', 'pageprops' )
 				->setParam( 'ppprop', 'wikibase_item' );
@@ -285,8 +283,7 @@ class Edition {
 		$indexPages = [];
 
 		// First of all, find all subpages of this Edition.
-		$f = new MediawikiFactory( $this->getWikisource()->getMediawikiApi() );
-		$pageListGetter = $f->newPageListGetter();
+		$pageListGetter = new PageListGetter( $this->getWikisource()->getMediawikiApi() );
 		$subpages = $pageListGetter->getFromPrefix( $this->getPageTitle() );
 
 		// Then, for each of them, find the list of relevant transclusions.

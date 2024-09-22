@@ -7,8 +7,8 @@
 
 namespace Wikisource\Api;
 
+use Addwiki\Mediawiki\Api\Client\Action\Request\ActionRequest;
 use GuzzleHttp\Client;
-use Mediawiki\Api\FluentRequest;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\DomCrawler\Crawler;
@@ -107,8 +107,7 @@ class IndexPage {
 		}
 
 		// Query to make sure the page title exists and is an Index page.
-		$req = new FluentRequest();
-		$req->setAction( 'query' );
+		$req = ActionRequest::simpleGet( 'query' );
 		$req->addParams( [ 'titles' => $title, 'prop' => 'info', 'inprop' => 'url' ] );
 		$res = $this->wikisource->sendApiRequest( $req, 'query.pages' );
 		if ( !isset( $res[0] ) ) {
@@ -188,8 +187,7 @@ class IndexPage {
 
 		// Use the API to get a list of all existing pages.
 		if ( $onlyExisting ) {
-			$req = new FluentRequest();
-			$req->setAction( 'query' );
+			$req = ActionRequest::simpleGet( 'query' );
 			$indexNsLocalName = $this->wikisource
 				->getNamespaceLocalName( Wikisource::NS_NAME_INDEX );
 			$title = substr( $this->getTitle(), strlen( $indexNsLocalName ) + 1 );
