@@ -4,4 +4,5 @@
 /examples/cache/
 /docs/api/
 /phpdoc.xml
-
+.phpunit.cache
+.phpunit.result.cache

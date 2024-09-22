@@ -27,6 +27,7 @@
         "symfony/dom-crawler": "^4.2|^5.0|^6|^7"
     },
     "require-dev": {
+        "phpunit/phpunit": "^9",
         "mediawiki/minus-x": "^1.1",
         "php-parallel-lint/php-parallel-lint": "^1.2",
         "mediawiki/mediawiki-codesniffer": "^44.0",
@@ -39,7 +40,8 @@
             "composer validate",
             "parallel-lint . --exclude vendor",
             "minus-x check .",
-            "phpcs -s"
+            "phpcs -s",
+            "phpunit"
         ]
     },
     "config": {
