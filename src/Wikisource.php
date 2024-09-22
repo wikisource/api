@@ -6,9 +6,9 @@
 
 namespace Wikisource\Api;
 
+use Addwiki\Mediawiki\Api\Client\Action\ActionApi;
+use Addwiki\Mediawiki\Api\Client\Action\Request\ActionRequest;
 use Dflydev\DotAccessData\Data;
-use Mediawiki\Api\FluentRequest;
-use Mediawiki\Api\MediawikiApi;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -221,8 +221,7 @@ class Wikisource {
 			$this->logger->debug( "Using cached namespace data for " . $this->getLanguageCode() );
 		} else {
 			$this->logger->debug( "Requesting namespace data for " . $this->getLanguageCode() );
-			$request = FluentRequest::factory()
-				->setAction( 'query' )
+			$request = ActionRequest::simpleGet( 'query' )
 				->setParam( 'meta', 'siteinfo' )
 				->setParam( 'siprop', 'namespaces' );
 			$namespaces = $this->sendApiRequest( $request, 'query.namespaces' );
@@ -233,28 +232,28 @@ class Wikisource {
 	}
 
 	/**
-	 * Get a MediawikiApi object for interacting with this Wikisource.
-	 * @return MediawikiApi
+	 * Get an ActionApi object for interacting with this Wikisource.
+	 * @return ActionApi
 	 */
 	public function getMediawikiApi() {
-		$api = new MediawikiApi( 'https://' . $this->getDomainName() . '/w/api.php' );
+		$api = new ActionApi( 'https://' . $this->getDomainName() . '/w/api.php' );
 		return $api;
 	}
 
 	/**
 	 * Run an API query on this Wikisource.
-	 * @param FluentRequest $request The request to send.
+	 * @param ActionRequest $request The request to send.
 	 * @param string $resultKey The dot-delimited array key of the results (e.g. for a pageprop
 	 * query, it's 'query.pages').
 	 * @return array
 	 */
-	public function sendApiRequest( FluentRequest $request, $resultKey ) {
+	public function sendApiRequest( ActionRequest $request, $resultKey ) {
 		$data = [];
 		$continue = true;
 		do {
 			// Send request and save data for later returning.
 			$this->logger->debug( "API request: " . json_encode( $request->getParams() ) );
-			$result = new Data( $this->getMediawikiApi()->getRequest( $request ) );
+			$result = new Data( $this->getMediawikiApi()->request( $request ) );
 			if ( !$result->has( $resultKey ) ) {
 				$continue = false;
 				continue;

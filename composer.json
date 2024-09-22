@@ -20,19 +20,19 @@
     "require": {
         "ext-json": "*",
         "ext-simplexml": "*",
-        "psr/cache": "^1.0",
-        "psr/log": "^1.0",
+        "psr/cache": "^1|^2|^3",
+        "psr/log": "^1|^2|^3",
         "dflydev/dot-access-data": "^3.0",
-        "addwiki/mediawiki-api": "^0.7",
+        "addwiki/mediawiki-api": "^3",
         "symfony/dom-crawler": "^4.2|^5.0|^6|^7"
     },
     "require-dev": {
         "mediawiki/minus-x": "^1.1",
         "php-parallel-lint/php-parallel-lint": "^1.2",
         "mediawiki/mediawiki-codesniffer": "^44.0",
-        "tedivm/stash": "^0.17",
-        "monolog/monolog": "^1.21|^2.0",
-        "symfony/var-dumper": "^5.1"
+        "tedivm/stash": "^1",
+        "monolog/monolog": "^1|^2|^3",
+        "symfony/var-dumper": "^5|^6|^7"
     },
     "scripts": {
         "test": [
