@@ -6,8 +6,8 @@
 
 namespace Wikisource\Api;
 
-use Mediawiki\Api\MediawikiApi;
-use Mediawiki\Api\SimpleRequest;
+use Addwiki\Mediawiki\Api\Client\Action\ActionApi;
+use Addwiki\Mediawiki\Api\Client\Action\Request\ActionRequest;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -186,9 +186,9 @@ class WikisourceApi {
 			$this->logger->debug( "Using cached data for Wikidata item $id" );
 			return $cacheItem;
 		}
-		$wdApi = new MediawikiApi( 'https://www.wikidata.org/w/api.php' );
-		$metadataRequest = new SimpleRequest( 'wbgetentities', [ 'ids' => $id ] );
-		$itemResult = $wdApi->getRequest( $metadataRequest );
+		$wdApi = new ActionApi( 'https://www.wikidata.org/w/api.php' );
+		$metadataRequest = ActionRequest::simpleGet( 'wbgetentities', [ 'ids' => $id ] );
+		$itemResult = $wdApi->request( $metadataRequest );
 		if ( !isset( $itemResult['success'] ) || !isset( $itemResult['entities'][$id] ) ) {
 			return false;
 		}
