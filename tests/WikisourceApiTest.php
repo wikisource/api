@@ -6,7 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Wikisource\Api\WikisourceApi;
 
 /**
- * @covers WikisourceApi
+ * @covers \Wikisource\Api\WikisourceApi
  */
 class WikisourceApiTest extends TestCase {
 
