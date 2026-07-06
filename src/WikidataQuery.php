@@ -18,7 +18,7 @@ class WikidataQuery {
 	protected $logger;
 
 	/** @var string HTTP user agent. */
-	protected $userAgent;
+	protected $userAgent = '';
 
 	/** @var string The Sparql query to run. */
 	protected $query;
