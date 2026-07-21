@@ -64,6 +64,7 @@ class WikidataQuery {
 		$client = new Client( [
 			'headers' => [
 				'User-Agent' => $this->userAgent,
+				'Accept' => 'application/sparql-results+xml',
 			],
 		] );
 		$response = $client->request( 'GET', $url );

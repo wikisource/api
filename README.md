@@ -86,7 +86,7 @@ conforming to the [WMF User-Agent Policy](https://foundation.wikimedia.org/wiki/
 
 ```php
 $wsApi = new \Wikisource\Api\WikisourceApi();
-$wgApi->setUserAgent( 'my-example-tool.toolforge.org' );
+$wsApi->setUserAgent( 'my-example-tool.toolforge.org' );
 ```
 
 ## Issues
