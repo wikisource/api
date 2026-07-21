@@ -17,6 +17,9 @@ class WikidataQuery {
 	/** @var \Psr\Log\LoggerInterface The logger to use */
 	protected $logger;
 
+	/** @var string HTTP user agent. */
+	protected $userAgent = '';
+
 	/** @var string The Sparql query to run. */
 	protected $query;
 
@@ -26,6 +29,16 @@ class WikidataQuery {
 	 */
 	public function __construct( $query ) {
 		$this->query = $query;
+	}
+
+	/**
+	 * Set the user agent that will be used when sending API requests.
+	 *
+	 * @param string $userAgent
+	 * @return void
+	 */
+	public function setUserAgent( string $userAgent ): void {
+		$this->userAgent = $userAgent;
 	}
 
 	/**
@@ -48,7 +61,12 @@ class WikidataQuery {
 	 */
 	protected function getXml( $query ) {
 		$url = "https://query.wikidata.org/bigdata/namespace/wdq/sparql?query=" . urlencode( $query );
-		$client = new Client();
+		$client = new Client( [
+			'headers' => [
+				'User-Agent' => $this->userAgent,
+				'Accept' => 'application/sparql-results+xml',
+			],
+		] );
 		$response = $client->request( 'GET', $url );
 		return new SimpleXMLElement( $response->getBody()->getContents() );
 	}

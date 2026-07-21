@@ -24,6 +24,9 @@ class WikisourceApi {
 	/** @var \Psr\Log\LoggerInterface The logger to use. */
 	protected $logger;
 
+	/** @var string The HTTP user agent to send with API requests. */
+	protected $userAgent = 'Wikisource PHP API; packagist.org/packages/wikisource/api';
+
 	/**
 	 * Construct a new WikisourceApi object. The logger will default to NullLogger until you set
 	 * something else via WikisourceApi::setLogger().
@@ -42,6 +45,24 @@ class WikisourceApi {
 	 */
 	public function setLogger( LoggerInterface $logger ) {
 		$this->logger = $logger;
+	}
+
+	/**
+	 * Set the user agent that will be used when sending API requests to Wikisources, Wikidata etc.
+	 *
+	 * @param string $userAgent
+	 * @return void
+	 */
+	public function setUserAgent( string $userAgent ): void {
+		$this->userAgent = $userAgent;
+	}
+
+	/**
+	 * Get the user agent to use when sending API requests.
+	 * @return string
+	 */
+	public function getUserAgent(): string {
+		return $this->userAgent;
 	}
 
 	/**
@@ -116,6 +137,7 @@ class WikisourceApi {
 				. "?lang rdfs:label ?langName . FILTER(LANG(?langName) = ?langCode || "
 				. "( ?langCode = 'mul' && LANG(?langName) = 'en' )) . " . "}";
 			$wdQuery = new WikidataQuery( $query );
+			$wdQuery->setUserAgent( $this->getUserAgent() );
 			$data = $wdQuery->fetch();
 			if ( !is_numeric( $cacheLifetime ) ) {
 				$cacheLifetime = 60 * 60 * 24 * 30;

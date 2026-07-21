@@ -79,6 +79,16 @@ The default cache times are as follows:
 You can enable logging by passing `WikisourceApi::setLogger()` any object
 that implements [PSR-3's](http://www.php-fig.org/psr/psr-3/) `LoggerInterface`.
 
+## User agent
+
+Don't forget to set a User-Agent with some contact details,
+conforming to the [WMF User-Agent Policy](https://foundation.wikimedia.org/wiki/Special:MyLanguage/Policy:Wikimedia_Foundation_User-Agent_Policy).
+
+```php
+$wsApi = new \Wikisource\Api\WikisourceApi();
+$wsApi->setUserAgent( 'my-example-tool.toolforge.org' );
+```
+
 ## Issues
 
 Please report all issues via Phabricator (tag them with the
