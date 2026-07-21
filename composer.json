@@ -23,7 +23,7 @@
         "psr/cache": "^1|^2|^3",
         "psr/log": "^1|^2|^3",
         "dflydev/dot-access-data": "^3.0",
-        "addwiki/mediawiki-api": "^3",
+        "addwiki/addwiki": "^4",
         "symfony/dom-crawler": "^4.2|^5.0|^6|^7"
     },
     "require-dev": {
